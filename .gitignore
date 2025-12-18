@@ -1,0 +1,15 @@
+# DUA-protected data (never commit)
+data/raw/
+data/private/
+
+# Large intermediate artifacts
+results/
+*.parquet
+*.gpkg
+*.geojson.backup
+data/raw/
+data/private/
+results/
+*.parquet
+*.gpkg
+*.geojson.backup
