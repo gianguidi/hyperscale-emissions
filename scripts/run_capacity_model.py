@@ -1,6 +1,17 @@
 from __future__ import annotations
 
+import os
+import sys
 import pandas as pd
+
+# ------------------------------------------------------------------
+# Make sure the local src/ directory is on sys.path so we can
+# import the hyperscale_emissions package without pip install -e .
+# ------------------------------------------------------------------
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(ROOT_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
 from hyperscale_emissions.capacity_model import (
     CapacityModelConfig,
@@ -10,7 +21,6 @@ from hyperscale_emissions.capacity_model import (
     predict_missing_capacity,
 )
 from hyperscale_emissions.utils import ensure_dir
-
 
 DATA_PATH = "data/processed/all_facilities.csv"
 
