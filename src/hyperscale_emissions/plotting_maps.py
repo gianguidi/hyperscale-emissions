@@ -151,7 +151,7 @@ def plot_figure1a_hyperscalers(
         ensure_dir(out_path.rsplit("/", 1)[0])
         fig1.savefig(out_path, bbox_inches="tight", dpi=300)
 
-    plt.show(fig1)
+    plt.show()
 
 
 def plot_figure1b_power_plants(
@@ -244,4 +244,4 @@ def plot_figure1b_power_plants(
         ensure_dir(out_path.rsplit("/", 1)[0])
         fig2.savefig(out_path, bbox_inches="tight", dpi=300)
 
-    plt.show(fig2)
+    plt.show()
