@@ -1,0 +1,14 @@
+name: hyperscale-emissions
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - geopandas
+  - shapely
+  - pyyaml
+  - pip
