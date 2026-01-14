@@ -156,7 +156,13 @@ The underlying facility-level dataset is covered by a DUA and cannot be shared. 
   - The preprocessing steps,
   - The figure-generation code,
   - Example synthetic and aggregated datasets (once added).
+    
+- The folder named "public" contains aggregated, non-sensitive outputs intended for public release and reproducibility:
+    - State-level totals: electricity consumption (TWh) and CO2e emissions
+    - Balancing authority totals: electricity consumption (TWh) and CO2e emissions
 
+These files are aggregated summaries and do not include facility-level information.
+EOF
 ---
 
 ## Citation
