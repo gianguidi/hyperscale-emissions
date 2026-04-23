@@ -165,6 +165,19 @@ These files are aggregated summaries and do not include facility-level informati
 EOF
 ---
 
+## Revision analyses (Round 2)
+
+Additional scripts used for the second-round revision:
+
+- `scripts/run_utilization_scenarios.py`  
+  Computes national, state, and balancing-authority electricity/emissions totals under multiple facility-load scenarios.
+
+- `scripts/run_spatial_validation.py`  
+  Re-runs the capacity-imputation model under grouped validation schemes (balancing authority, state, climate category) and exports split artifacts for reproducibility.
+
+Outputs are written to `results/tables/`.
+
+
 ## Citation
 
 If you use this code, please cite:
