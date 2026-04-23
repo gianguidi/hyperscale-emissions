@@ -35,6 +35,25 @@ def main() -> None:
     )
 
     scenario_facilities.to_csv(RESULTS_DIR / "facility_scenarios.csv", index=False)
+    # complete-case sensitivity
+    for flag_col, stem in [
+        ("capacity_imputed", "exclude_capacity_imputed"),
+        ("sqft_imputed", "exclude_sqft_imputed"),
+    ]:
+        if flag_col in scenario_facilities.columns:
+            subset = scenario_facilities.loc[~scenario_facilities[flag_col]].copy()
+            national_subset = (
+                subset.groupby(["scenario", "utilization_u"], as_index=False)
+                .agg(
+                    total_energy_twh=("annual_energy_twh", "sum"),
+                    total_co2_mt=("annual_co2_mt", "sum"),
+                    n_facilities=("annual_energy_twh", "size"),
+                )
+            )
+            national_subset.to_csv(
+                RESULTS_DIR / f"national_utilization_scenarios_{stem}.csv",
+                index=False,
+            )
 
     national = summarize_scenarios(scenario_facilities)
     national.to_csv(RESULTS_DIR / "national_utilization_scenarios.csv", index=False)
