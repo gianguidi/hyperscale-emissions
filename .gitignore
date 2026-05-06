@@ -1,14 +1,12 @@
 # DUA-protected data (never commit)
-data/raw/
+data/raw/*
 data/private/
 
+# But DO commit the public EPA eGRID dataset
+!data/raw/egrid2023_data_rev2.xlsx
+!data/raw/egrid2022_data.xlsx
+
 # Large intermediate artifacts
-results/
-*.parquet
-*.gpkg
-*.geojson.backup
-data/raw/
-data/private/
 results/
 *.parquet
 *.gpkg
