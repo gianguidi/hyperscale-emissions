@@ -1,168 +1,119 @@
 # hyperscale-emissions
 
-Code for the paper:
+Code and reproducibility materials for:
 
-> **Assessing the carbon emissions of United States hyperscale data centers**  
-> Guidi G., Dominici F., Sprinkle C., Gilmour J., Butler K., Bell E., Delaney S., Bargagli-Stoffi F.J.  
-> (submitted to *Nature Sustainability*).
+> **Assessing the Carbon Emissions of United States Hyperscale Data Centers**  
+> Guidi et al.  
+> Submitted to *Nature Sustainability*.
 
-This repository contains:
+This repository supports reproducibility under a data use agreement (DUA). The facility-level data used in the paper cannot be released publicly because it contains commercially sensitive facility identifiers and locations. The repository is therefore organized in two layers:
 
-- A fully specified **scikit-learn pipeline** for estimating data-center power capacity (`current_mw`),
-- Code to compute **electricity use and emissions** for U.S. hyperscale data centers,
-- Scripts to reproduce the **key figures** (maps, fuel-mix chart) from synthetic/aggregated data,
-- A structure that supports reproducibility under a **data use agreement (DUA)**.
+1. **Public/reviewer-reproducible layer**: all code, schemas, expected outputs, aggregated tables, figure-generation scripts, and validation artifacts.
+2. **Restricted full-reproduction layer**: the same scripts can be run end-to-end when the DUA-protected facility-level and geospatial inputs are placed in the documented local folders.
 
-Because the underlying facility-level dataset is subject to a DUA, we do **not** release raw facility identifiers or exact locations. Instead, we provide:
+## Headline results reproduced by the current workflow
 
-- Synthetic / anonymized datasets (to be placed under `data/processed/`),
-- Aggregated tables at state / balancing authority level,
-- All analysis and plotting code.
+Using the 403-facility analytical sample, EPA eGRID2023 Revision 2, and four facility-load scenarios:
 
----
+| Scenario | Facility-load coefficient | Electricity (TWh) | CO2 (Mt) |
+|---|---:|---:|---:|
+| Low-load | 0.480 | 67.7 | 36.9 |
+| Central | 0.580 | 81.8 | 44.6 |
+| Continuity / upper conventional | 0.663 | 93.5 | 51.0 |
+| AI-weighted high | 0.700 | 98.6 | 53.8 |
+
+The central scenario is `u = 0.58`. The `u = 0.663` scenario is retained for continuity with earlier drafts and with server-level effective-utilization assumptions, but it is not treated as the central facility-level estimate.
 
 ## Repository structure
 
-- `src/hyperscale_emissions/`
-  - `data_io.py` – helpers to load raw and processed data.
-  - `capacity_model.py` – estimation of facility power capacity (`current_mw`) with a Gradient Boosting model + preprocessing pipeline.
-  - `fuel_mix.py` – computation of national and regional fuel mix for hyperscale load.
-  - `plotting_fuel_mix.py` – final Figure 4 fuel-mix plot (grouped fossil / nuclear / renewables).
-  - `plotting_maps.py` – Figure 1a (hyperscale facilities) and Figure 1b (power plants by fuel).
-  - `utils.py` – small shared utilities.
-- `scripts/`
-  - `run_capacity_model.py` – trains the capacity model, prints metrics, saves predicted capacities and diagnostics.
-  - `make_figure1_maps.py` – generates Figure 1a and 1b from GeoDataFrames or prepared files.
-  - `make_figure4_fuel_mix.py` – generates Figure 4 fuel-mix chart.
-- `data/`
-  - `raw/` – **not tracked** in git; place DUA-protected facility-level dataset, EPA eGRID, EIA inputs here.
-  - `processed/` – synthetic, anonymized, or aggregated datasets used in the scripts.
-- `results/`
-  - `figures/` – PDFs of all figures (e.g., `figure1a_hyperscalers.pdf`, `figure1b_power_plants.pdf`, `figure4_fuel_mix_GROUPED_final.pdf`).
-  - `tables/` – CSV tables used in the paper / SI.
-- `notebooks/`
-  - `NEW_clean_datacenters_datamerge_model.ipynb` – original development notebook (not included in this archive).
-
----
+```text
+hyperscale-emissions/
+  README.md
+  REPRO.md
+  environment.yml
+  requirements.txt
+  CITATION.cff
+  data/
+    raw/                 # local only; DUA/EPA/geospatial inputs; not tracked
+    processed/           # synthetic/anonymized or aggregated inputs for public scripts
+  results/
+    tables/              # CSV outputs and validation artifacts
+    figures/             # PDF/PNG figures
+  scripts/
+    run_capacity_model.py
+    run_spatial_validation.py
+    run_utilization_scenarios.py
+    make_figure1_maps.py
+    make_figure4_fuel_mix.py
+    check_paper_outputs.py
+    smoke_test_repository.py
+  src/hyperscale_emissions/
+    capacity_model.py
+    scenario_analysis.py
+    validation.py
+    fuel_mix.py
+    plotting_maps.py
+    plotting_fuel_mix.py
+    utils.py
+  notebooks/
+    README.md
+```
 
 ## Installation
 
-We recommend a fresh conda environment:
+Recommended:
 
 ```bash
 conda env create -f environment.yml
 conda activate hyperscale-emissions
 ```
 
-Or with `requirements.txt`:
+Alternative with pip:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+pip install -e .
 ```
 
----
+## Quick smoke test
 
-## Reproducing the capacity model
-
-The facility-level capacity model estimates `current_mw` for facilities missing reported power capacity.
-
-From the repo root:
+After cloning the repository and installing dependencies, run:
 
 ```bash
-python scripts/run_capacity_model.py
+python scripts/smoke_test_repository.py
 ```
 
-This script:
+This checks that Python files import correctly, the expected folders exist, and the package can be imported. It does not require DUA-protected data.
 
-1. Reads a facility dataset from `data/processed/all_facilities.csv` (you should create this from your own pipeline),
-2. Splits rows into those **with** and **without** `current_mw`,
-3. Trains a Gradient Boosting model with a full preprocessing pipeline (numeric + categorical),
-4. Runs 5-fold cross-validation on the training set,
-5. Evaluates on a 15% held-out test set and prints:
+## Full reviewer reproduction workflow
 
-   - Cross-validated RMSE (MW)  
-   - Test MSE  
-   - Test R²  
-   - Test MAE  
-   - Test MAPE  
-   - Test mean error (bias)
-
-6. Produces a diagnostic plot: `results/figures/hyp_model_performance.pdf`,
-7. Saves a combined dataset with observed and predicted capacity to  
-   `data/processed/facilities_with_predicted_capacity.csv`.
-
-In the manuscript, the reported metrics are:
-
-- Cross-Validation RMSE: **21.50 MW**  
-- Test MSE: **155.88**  
-- Test R²: **0.807**  
-- Test MAE: **8.13 MW**  
-- Test MAPE: **0.424**  
-- Test Mean Error (bias): **–1.33 MW**
-
----
-
-## Reproducing key figures
-
-### Figure 1a / 1b – Maps of data centers and power plants
-
-Once you have prepared the GeoDataFrames (or equivalent files) for:
-
-- `df_emissions_per_dc_SF` (hyperscale data centers),
-- `gdf_EPA_totals` (balancing authority polygons),
-- `plants_with_regions` (power plants with primary fuel),
-
-use:
+Place the local input files in `data/processed/` using the schema documented in `REPRO.md`, then run:
 
 ```bash
+python scripts/run_spatial_validation.py
+python scripts/run_utilization_scenarios.py
 python scripts/make_figure1_maps.py
-```
-
-This will generate:
-
-- `results/figures/figure1a_hyperscalers.pdf`
-- `results/figures/figure1b_power_plants.pdf`
-
-### Figure 4 – National + top BA fuel mix
-
-Place a CSV like `fuel_mix_hyperscalers.csv` under `data/processed/`  
-with columns:
-
-- `region_B_1` – BA/region id  
-- `Total_MW_scaled` – total load assigned to that region  
-- fuel share columns: `COAL`, `GAS`, `OIL`, `OFSL`, `OTHF`, `NUCLEAR`, `BIOMASS`, `GEOTHERMAL`, `HYDRO`, `SOLAR`, `WIND` (fractions summing to ~1 per row)
-
-Then run:
-
-```bash
 python scripts/make_figure4_fuel_mix.py
+python scripts/check_paper_outputs.py
 ```
 
-which produces:
+The expected manuscript-facing outputs are written to `results/tables/` and `results/figures/`.
 
-- `results/figures/figure4_fuel_mix_GROUPED_final.pdf`
+## Required input schemas
 
-This is the grouped fossil/nuclear/renewables stacked chart, with per-region TWh labels, per-segment percentages, and group summaries above each bar.
-
----
+The scripts intentionally accept simple CSV/GeoJSON inputs so that reviewers with access to the restricted data can reproduce the results locally. Required columns are documented in `REPRO.md`.
 
 ## Data availability
 
-The underlying facility-level dataset is covered by a DUA and cannot be shared. This repository is designed so that:
+The DUA-protected facility-level dataset is not publicly released. The public repository should include:
 
-- Reviewers and researchers with access to similar data can reproduce the full pipeline by placing their inputs in `data/raw/` and creating intermediate `data/processed/` files following the documented schema.
-- Others can still inspect:
-  - The full model specification,
-  - The preprocessing steps,
-  - The figure-generation code,
-  - Example synthetic and aggregated datasets (once added).
-
----
+- all code used for capacity modeling, validation, scenario analysis, and figures;
+- split artifacts (`splits.json`) and validation tables;
+- aggregated state and balancing-authority outputs;
+- synthetic or anonymized example inputs that allow scripts to run without exposing sensitive coordinates or facility identifiers.
 
 ## Citation
 
-If you use this code, please cite:
-
-> Guidi et al., *Assessing the carbon emissions of United States hyperscale data centers*, 2025.
-
-A machine-readable citation file is provided in `CITATION.cff`.
+If using this code, please cite the manuscript and the machine-readable `CITATION.cff` file.

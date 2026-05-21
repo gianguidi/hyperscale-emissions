@@ -1,14 +1,3 @@
-"""hyperscale_emissions
+"""Utilities for reproducing the hyperscale-emissions manuscript outputs."""
 
-Code for estimating electricity use and emissions of U.S. hyperscale
-data centers and generating the figures for the Guidi et al. paper.
-"""
-
-__all__ = [
-    "capacity_model",
-    "fuel_mix",
-    "plotting_fuel_mix",
-    "plotting_maps",
-    "data_io",
-    "utils",
-]
+__version__ = "0.2.0"
