@@ -8,6 +8,22 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
+import os
+import sys
+
+# ------------------------------------------------------------------
+# Ensure the src/ directory is on sys.path so we can import the
+# hyperscale_emissions package without installing it.
+# ------------------------------------------------------------------
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(ROOT_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
+from hyperscale_emissions.plotting_maps import (
+    plot_figure1a_hyperscalers,
+    plot_figure1b_power_plants,
+)
 
 from hyperscale_emissions.plotting_maps import plot_figure1a_hyperscalers, plot_figure1b_power_plants  # noqa: E402
 

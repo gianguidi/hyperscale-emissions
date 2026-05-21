@@ -114,6 +114,19 @@ The DUA-protected facility-level dataset is not publicly released. The public re
 - aggregated state and balancing-authority outputs;
 - synthetic or anonymized example inputs that allow scripts to run without exposing sensitive coordinates or facility identifiers.
 
+## Revision analyses (Round 2)
+
+Additional scripts used for the second-round revision:
+
+- `scripts/run_utilization_scenarios.py`  
+  Computes national, state, and balancing-authority electricity/emissions totals under multiple facility-load scenarios.
+
+- `scripts/run_spatial_validation.py`  
+  Re-runs the capacity-imputation model under grouped validation schemes (balancing authority, state, climate category) and exports split artifacts for reproducibility.
+
+Outputs are written to `results/tables/`.
+
+
 ## Citation
 
 If using this code, please cite the manuscript and the machine-readable `CITATION.cff` file.
