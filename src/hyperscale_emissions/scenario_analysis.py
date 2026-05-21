@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Dict, Iterable, Optional
 
 import pandas as pd
-import numpy as np
-
 
 HOURS_PER_YEAR = 8760.0
-DEFAULT_SCENARIOS = {
+DEFAULT_SCENARIOS: Dict[str, float] = {
     "low_load": 0.48,
-    "intermediate": 0.58,
-    "reference": 0.663,
+    "central": 0.58,
+    "continuity_u0663": 0.663,
+    "ai_weighted_high": 0.70,
 }
 
 
@@ -26,17 +24,13 @@ def infer_ba_intensity_from_reference(
     df: pd.DataFrame,
     ba_col: str = "region_B_1",
 ) -> pd.DataFrame:
-    """
-    Infer average BA carbon intensity (gCO2/kWh) from reference-scenario
-    facility-level energy/emissions if those columns exist.
-    """
+    """Infer BA carbon intensity from facility-level reference energy/emissions."""
     energy_col = _find_col(df, ["annual_energy_twh", "energy_twh", "twh"])
     emissions_col = _find_col(df, ["annual_co2_mt", "co2_mt", "emissions_mt"])
-
     if energy_col is None or emissions_col is None:
         raise ValueError(
-            "Need reference-scenario facility energy and emissions columns "
-            "(e.g. annual_energy_twh, annual_co2_mt) to infer BA intensity."
+            "Need either a BA intensity table or facility energy/emissions columns "
+            "such as annual_energy_twh and annual_co2_mt."
         )
 
     tmp = df[[ba_col, energy_col, emissions_col]].copy()
@@ -53,25 +47,22 @@ def build_scenario_facility_table(
     ba_col: str = "region_B_1",
     state_col: str = "state",
 ) -> pd.DataFrame:
-    """
-    Build facility-level energy and emissions under multiple utilization scenarios.
+    """Build facility-level electricity and CO2 under facility-load scenarios."""
+    if capacity_col not in facilities.columns:
+        raise KeyError(f"Missing capacity column: {capacity_col}")
+    if ba_col not in facilities.columns:
+        raise KeyError(f"Missing BA column: {ba_col}")
 
-    Required:
-      - facilities[current_mw]
-      - facilities[region_B_1]
-      - either:
-          (a) a BA-level intensity table with columns [region_B_1, ba_ci_gco2_per_kwh], or
-          (b) facility-level reference energy+emissions to infer BA intensity.
-    """
     df = facilities.copy()
-
     if ba_intensity is None:
         ba_intensity = infer_ba_intensity_from_reference(df, ba_col=ba_col)
 
-    df = df.merge(ba_intensity, on=ba_col, how="left", validate="m:1")
+    if "ba_ci_gco2_per_kwh" not in ba_intensity.columns:
+        raise KeyError("BA intensity table must include ba_ci_gco2_per_kwh")
 
+    df = df.merge(ba_intensity[[ba_col, "ba_ci_gco2_per_kwh"]], on=ba_col, how="left", validate="m:1")
     if df["ba_ci_gco2_per_kwh"].isna().any():
-        missing = df.loc[df["ba_ci_gco2_per_kwh"].isna(), ba_col].dropna().unique().tolist()
+        missing = sorted(df.loc[df["ba_ci_gco2_per_kwh"].isna(), ba_col].dropna().unique().tolist())
         raise ValueError(f"Missing BA carbon intensity for: {missing}")
 
     out_frames = []
@@ -79,46 +70,30 @@ def build_scenario_facility_table(
         tmp = df.copy()
         tmp["scenario"] = scenario_name
         tmp["utilization_u"] = u
-        tmp["annual_energy_twh"] = tmp[capacity_col] * HOURS_PER_YEAR * u / 1e6
-        tmp["annual_co2_mt"] = (
-            tmp["annual_energy_twh"] * 1e9 * tmp["ba_ci_gco2_per_kwh"]
-        ) / 1e9
+        tmp["annual_energy_mwh"] = pd.to_numeric(tmp[capacity_col], errors="coerce") * HOURS_PER_YEAR * u
+        tmp["annual_energy_twh"] = tmp["annual_energy_mwh"] / 1_000_000.0
+        # gCO2/kWh equals kgCO2/MWh; kg = EF * MWh; Mt = kg/1e9
+        tmp["annual_co2_mt"] = tmp["annual_energy_mwh"] * tmp["ba_ci_gco2_per_kwh"] / 1e9
         out_frames.append(tmp)
 
-    out = pd.concat(out_frames, ignore_index=True)
-    return out
+    return pd.concat(out_frames, ignore_index=True)
 
 
-def summarize_scenarios(
-    scenario_df: pd.DataFrame,
-    group_col: Optional[str] = None,
-) -> pd.DataFrame:
-    if group_col is None:
-        out = (
-            scenario_df.groupby(["scenario", "utilization_u"], as_index=False)
-            .agg(
-                total_energy_twh=("annual_energy_twh", "sum"),
-                total_co2_mt=("annual_co2_mt", "sum"),
-                n_facilities=("annual_energy_twh", "size"),
-            )
+def summarize_scenarios(scenario_df: pd.DataFrame, group_col: Optional[str] = None) -> pd.DataFrame:
+    """Summarize scenario totals nationally or by a grouping column."""
+    group_cols = ["scenario", "utilization_u"] if group_col is None else [group_col, "scenario", "utilization_u"]
+    return (
+        scenario_df.groupby(group_cols, as_index=False)
+        .agg(
+            total_energy_twh=("annual_energy_twh", "sum"),
+            total_co2_mt=("annual_co2_mt", "sum"),
+            n_facilities=("annual_energy_twh", "size"),
         )
-    else:
-        out = (
-            scenario_df.groupby([group_col, "scenario", "utilization_u"], as_index=False)
-            .agg(
-                total_energy_twh=("annual_energy_twh", "sum"),
-                total_co2_mt=("annual_co2_mt", "sum"),
-                n_facilities=("annual_energy_twh", "size"),
-            )
-        )
-    return out
+    )
 
 
 def make_range_table(summary_df: pd.DataFrame, id_col: str) -> pd.DataFrame:
-    """
-    Convert long scenario summaries into a wide min/reference/max table.
-    """
+    """Convert long scenario summaries into wide scenario columns."""
     pivot = summary_df.pivot(index=id_col, columns="scenario", values=["total_energy_twh", "total_co2_mt"])
     pivot.columns = [f"{metric}_{scenario}" for metric, scenario in pivot.columns]
-    pivot = pivot.reset_index()
-    return pivot
+    return pivot.reset_index()

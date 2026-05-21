@@ -1,64 +1,44 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import sys
+from pathlib import Path
+
 import pandas as pd
 
-# ------------------------------------------------------------------
-# Make sure the local src/ directory is on sys.path so we can
-# import the hyperscale_emissions package without pip install -e .
-# ------------------------------------------------------------------
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(ROOT_DIR, "src")
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-from hyperscale_emissions.capacity_model import (
+from hyperscale_emissions.capacity_model import (  # noqa: E402
     CapacityModelConfig,
-    split_with_and_without_power,
-    train_capacity_model,
     plot_predicted_vs_observed,
     predict_missing_capacity,
+    split_with_and_without_power,
+    train_capacity_model,
 )
-from hyperscale_emissions.utils import ensure_dir
+from hyperscale_emissions.utils import ensure_dir  # noqa: E402
 
-DATA_PATH = "data/processed/all_facilities.csv"
+DATA_PATH = ROOT / "data" / "processed" / "all_facilities.csv"
+OUT_FIG = ROOT / "results" / "figures" / "hyp_model_performance.pdf"
+OUT_DATA = ROOT / "data" / "processed" / "facilities_with_predicted_capacity.csv"
 
 
-def main():
+def main() -> None:
+    if not DATA_PATH.exists():
+        raise SystemExit(f"Missing input: {DATA_PATH}\nSee REPRO.md for the required schema.")
     df = pd.read_csv(DATA_PATH)
-
     cfg = CapacityModelConfig()
     df_with, _ = split_with_and_without_power(df, target="current_mw")
-
     results = train_capacity_model(df_with, cfg)
-
-    print("Model: GradientBoostingRegressor(n_estimators=100)")
-    print(f"Cross-Validation RMSE: {results.metrics['cv_rmse']:.4f}")
-    print(f"Test Mean Squared Error (MSE): {results.metrics['test_mse']:.4f}")
-    print(f"Test R-squared (R²): {results.metrics['test_r2']:.4f}")
-    print(f"Test Mean Absolute Error (MAE): {results.metrics['test_mae']:.4f}")
-    print(f"Test Mean Absolute Percentage Error (MAPE): {results.metrics['test_mape']:.4f}")
-    print(f"Test Mean Error: {results.metrics['test_mean_error']:.4f}")
-
-    plot_predicted_vs_observed(
-        results,
-        out_path="results/figures/hyp_model_performance.pdf",
-    )
-
-    df_with_predictions = predict_missing_capacity(
-        df_all=df,
-        config=cfg,
-        results=results,
-        target_col="current_mw",
-        new_col="predicted_current_mw",
-    )
-
-    ensure_dir("data/processed")
-    df_with_predictions.to_csv(
-        "data/processed/facilities_with_predicted_capacity.csv",
-        index=False,
-    )
+    for key, value in results.metrics.items():
+        print(f"{key}: {value:.4f}")
+    plot_predicted_vs_observed(results, out_path=str(OUT_FIG))
+    df_with_predictions = predict_missing_capacity(df, cfg, results)
+    ensure_dir(OUT_DATA.parent)
+    df_with_predictions.to_csv(OUT_DATA, index=False)
+    print(f"Wrote {OUT_DATA}")
 
 
 if __name__ == "__main__":
