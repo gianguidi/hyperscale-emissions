@@ -1,4 +1,7 @@
-from __future__ import annotations
+"""
+Plotting functions for Figure 1:
+- Figure 1a: Hyperscale data centers (dot size ∝ power capacity)
+- Figure 1b: Power plants by primary fuel (top 75% by annual generation)
 
 from pathlib import Path
 from typing import Iterable
@@ -126,6 +129,9 @@ def _prepare_plant_points(plants: pd.DataFrame, aggregate_by_operator: bool = Tr
     return out
 
 
+# -------------------------------------------------------------------
+# Figure 1b – Power plants by primary fuel (top 75% by generation)
+# -------------------------------------------------------------------
 def plot_figure1b_power_plants(
     plants_with_regions_path: str = "data/processed/plants_with_regions.csv",
     gdf_EPA_totals_path: str = "data/processed/gdf_EPA_totals.geojson",
