@@ -1,7 +1,7 @@
-"""
-Plotting functions for Figure 1:
-- Figure 1a: Hyperscale data centers (dot size ∝ power capacity)
-- Figure 1b: Power plants by primary fuel (top 75% by annual generation)
+
+#Plotting functions for Figure 1:
+#- Figure 1a: Hyperscale data centers (dot size ∝ power capacity)
+#- Figure 1b: Power plants by primary fuel (top 75% by annual generation)
 
 from pathlib import Path
 from typing import Iterable
@@ -67,7 +67,7 @@ def plot_figure1a_hyperscalers(
     output_path: str = "results/figures/figure1a_hyperscalers.pdf",
     show: bool = False,
 ) -> None:
-    """Map HDCs by power-capacity quartile."""
+    #Map HDCs by power-capacity quartile.
     _require_geopandas()
     dc = _read_geo(df_emissions_per_dc_SF_path)
     ba = _read_geo(gdf_EPA_totals_path)
@@ -138,7 +138,7 @@ def plot_figure1b_power_plants(
     output_path: str = "results/figures/figure1b_power_plants.pdf",
     show: bool = False,
 ) -> None:
-    """Map plant/operator-fuel records by primary fuel, keeping top 75% by generation."""
+    #Map plant/operator-fuel records by primary fuel, keeping top 75% by generation.
     _require_geopandas()
     plants = pd.read_csv(plants_with_regions_path)
     plants = _prepare_plant_points(plants, aggregate_by_operator=True)
