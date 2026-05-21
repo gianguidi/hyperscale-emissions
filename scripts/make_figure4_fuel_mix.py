@@ -1,31 +1,28 @@
+#!/usr/bin/env python3
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+
 import pandas as pd
 
-import os
-import sys
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-# ------------------------------------------------------------------
-# Ensure src/ is on sys.path so we can import hyperscale_emissions
-# without needing pip install -e .
-# ------------------------------------------------------------------
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(ROOT_DIR, "src")
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
+from hyperscale_emissions.plotting_fuel_mix import plot_figure4_fuel_mix  # noqa: E402
 
-from hyperscale_emissions.plotting_fuel_mix import plot_figure4_fuel_mix
-
-DATA_PATH = "data/processed/fuel_mix_hyperscalers.csv"
+DATA_PATH = ROOT / "data" / "processed" / "fuel_mix_hyperscalers.csv"
+OUT_PATH = ROOT / "results" / "figures" / "figure4_fuel_mix_GROUPED_final.pdf"
 
 
-def main():
+def main() -> None:
+    if not DATA_PATH.exists():
+        raise SystemExit(f"Missing input: {DATA_PATH}\nSee REPRO.md for schema.")
     df_fuel = pd.read_csv(DATA_PATH)
-
-    plot_figure4_fuel_mix(
-        fuel_mix_hyperscalers=df_fuel,
-        national_total_twh=93.66,
-        save_path="results/figures/figure4_fuel_mix_GROUPED_final.pdf",
-    )
+    plot_figure4_fuel_mix(df_fuel, national_total_twh=81.8, save_path=str(OUT_PATH), show=False)
+    print(f"Wrote {OUT_PATH}")
 
 
 if __name__ == "__main__":

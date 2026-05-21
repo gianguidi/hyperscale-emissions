@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 import os
 import sys
 
@@ -15,27 +25,19 @@ from hyperscale_emissions.plotting_maps import (
     plot_figure1b_power_plants,
 )
 
+from hyperscale_emissions.plotting_maps import plot_figure1a_hyperscalers, plot_figure1b_power_plants  # noqa: E402
 
-def main():
-    # Default paths – these assume you run from the repo root
-    df_emissions_per_dc_SF_path = "data/processed/df_emissions_per_dc_SF.geojson"
-    gdf_EPA_totals_path = "data/processed/gdf_EPA_totals.geojson"
-    plants_with_regions_path = "data/processed/plants_with_regions.csv"
 
-    # Figure 1a
+def main() -> None:
     plot_figure1a_hyperscalers(
-        df_emissions_per_dc_SF_path=df_emissions_per_dc_SF_path,
-        gdf_EPA_totals_path=gdf_EPA_totals_path,
-        output_path="results/figures/figure1a_hyperscalers.pdf",
-        show=True,
+        df_emissions_per_dc_SF_path=str(ROOT / "data" / "processed" / "df_emissions_per_dc_SF.geojson"),
+        gdf_EPA_totals_path=str(ROOT / "data" / "processed" / "gdf_EPA_totals.geojson"),
+        output_path=str(ROOT / "results" / "figures" / "figure1a_hyperscalers.pdf"),
     )
-
-    # Figure 1b
     plot_figure1b_power_plants(
-        plants_with_regions_path=plants_with_regions_path,
-        gdf_EPA_totals_path=gdf_EPA_totals_path,
-        output_path="results/figures/figure1b_power_plants.pdf",
-        show=True,
+        plants_with_regions_path=str(ROOT / "data" / "processed" / "plants_with_regions.csv"),
+        gdf_EPA_totals_path=str(ROOT / "data" / "processed" / "gdf_EPA_totals.geojson"),
+        output_path=str(ROOT / "results" / "figures" / "figure1b_power_plants.pdf"),
     )
 
 
