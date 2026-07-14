@@ -1,13 +1,31 @@
-# DUA-protected data (never commit)
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+.DS_Store
+
+# DUA-protected and large raw inputs should remain local
 data/raw/*
+data/restricted/*
+!data/raw/.gitkeep
+!data/restricted/.gitkeep
+
+# Optional local exports
+results/local/
+results/tables/restricted_coverage/
+
+# Restricted / local-only data
+data/raw/
+data/restricted/
 data/private/
+data/processed/all_facilities.csv
+data/processed/df_emissions_per_dc_SF.csv
+*baxtel*
+*facility_level*
+*coordinates*
+*address*
+*.xlsx
+*.xls
 
-# But DO commit the public EPA eGRID dataset
-!data/raw/egrid2023_data_rev2.xlsx
-!data/raw/egrid2022_data.xlsx
-
-# Large intermediate artifacts
-results/
-*.parquet
-*.gpkg
-*.geojson.backup
+# Old notebooks with stale Round 2 outputs
+notebooks/99_development_final_review_clean_hyperscale_emissions_v6.ipynb
