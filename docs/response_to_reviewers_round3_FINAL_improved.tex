@@ -1,0 +1,394 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{mdframed}
+
+\sloppy
+\setstretch{1.15}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+
+% Environment for quoted reviewer/editor text
+\newenvironment{revquote}{%
+  \begin{mdframed}[
+    leftmargin=0.5em,
+    rightmargin=0.5em,
+    linewidth=0pt,
+    backgroundcolor=gray!8,
+    skipabove=0.5em,
+    skipbelow=0.5em,
+    innertopmargin=0.6em,
+    innerbottommargin=0.6em,
+    innerleftmargin=0.8em,
+    innerrightmargin=0.8em
+  ]%
+  \itshape%
+}{%
+  \end{mdframed}%
+}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{Response to Reviewers --- Round 3}}\\[0.5em]
+    {\large Manuscript: NATSUSTAIN-25064024A}\\
+    {\large \textit{Assessing the Carbon Emissions of United States Hyperscale Data Centers}}
+\end{center}
+
+\vspace{1em}
+
+\section*{Summary for the Editor}
+
+We thank the Editor, Reviewer~2, and Reviewer~3 for their continued careful engagement with our manuscript. We are encouraged that Reviewer~2 viewed the move to a scenario-based framework as a sound approach, and that Reviewer~3 found the Round~2 revision noticeably stronger and the paper to fill a useful gap. The present revision addresses the remaining issues raised by both reviewers. In particular, we have aligned the emissions-attribution calculation, manuscript text, Supplementary Information, figures, tables, and public repository; clarified the interpretation of the facility-load scenarios; expanded the inventory-coverage diagnostics; and strengthened the limitations around spatial and temporal attribution, market-based procurement, and dedicated or co-located supply.
+
+The main technical change in this revision concerns the denominator used to report balancing-authority carbon intensity. Reviewer~2 identified that the manuscript and Supplementary Information described a total-generation, balancing-authority attribution method, whereas the public workflow used a combustion-output carbon intensity when multiplying by total HDC electricity demand. We appreciate this careful code and methods audit. To make the implementation fully consistent with the attributional method described in the paper, we have revised the default calculation so that balancing-authority carbon intensity is computed as total reported CO$_2$ emissions divided by total reported net generation, including nuclear, renewable, and other non-combustion generation in the denominator:
+
+\[
+CI_b^{\mathrm{total}} =
+\frac{\sum_{p \in b} E_{pb}}{\sum_{p \in b} G_{pb}},
+\]
+
+where $E_{pb}$ is annual CO$_2$ emissions from plant $p$ in balancing authority $b$, and $G_{pb}$ is annual net generation from plant $p$. HDC-attributable emissions are then computed as:
+
+\[
+E^{\mathrm{HDC}} =
+\sum_b L_b \times CI_b^{\mathrm{total}},
+\]
+
+where $L_b$ is annual HDC electricity demand in balancing authority $b$. The denominator includes all eGRID generation used in the balancing-authority attribution layer, not only combustion generation.
+
+We also clarify the relation between this revision and the previous revision. In Round~2, we had already updated the grid-attribution layer from eGRID2022 to EPA eGRID2023 Revision~2, which changed the numerical results relative to earlier manuscript versions. The present revision keeps that eGRID2023 Revision~2 grid vintage fixed; the change made here is the alignment of the carbon-intensity denominator within the eGRID2023 Revision~2 attribution layer. Thus, the ``previous'' values discussed below refer to the Round~2 eGRID2023 Revision~2 outputs, whereas the revised values use the same eGRID vintage with the total-output denominator.
+
+This alignment changes the reported CO$_2$ estimates but not the facility inventory, electricity-demand scenarios, balancing-authority assignments, or generation-share-weighted fuel mix. Across the four facility-load scenarios, HDC electricity demand remains approximately 68--99~TWh. The revised attributable CO$_2$ range is approximately 21--31~Mt CO$_2$, rather than 37--54~Mt CO$_2$. Under the central facility-load scenario ($u=0.58$), electricity demand remains approximately 81.8~TWh and attributable emissions are approximately 25.7~Mt CO$_2$. The revised HDC electricity-weighted total-output carbon intensity is approximately 314~gCO$_2$/kWh. The previously reported value of approximately 545~gCO$_2$/kWh is now retained only as a clearly labelled combustion-output diagnostic and is not used to compute headline HDC-attributable emissions.
+
+We also revised the national-grid comparison. Under the total-output attribution used in this revision, the HDC-weighted average is approximately 314~gCO$_2$/kWh, compared with the eGRID2023 total-output US average of approximately 348~gCO$_2$/kWh. We therefore removed the previous statement that HDC-attributed electricity is more carbon-intensive than the contemporaneous US grid average. The revised interpretation is more precise: HDCs represent a large, geographically concentrated electricity load whose absolute emissions depend strongly on the generation mix of the balancing authorities in which facilities are located. The attributed generation mix remains approximately 54\% fossil, 21\% nuclear, and 25\% renewable.
+
+In addition to the emissions-attribution alignment, we made the following revisions:
+
+\begin{enumerate}[label=\arabic*.]
+    \item We harmonized all headline statistics in the Abstract, one-sentence summary, Results, Discussion, figures, tables, and Supplementary Information around the central scenario ($u=0.58$), while retaining the full four-scenario range.
+    \item We added a compact main-text scenario table mapping each facility-load coefficient to its interpretation, including its relationship to conventional-server and AI-training sensitivity cases, design contingency, and whether the coefficient should be interpreted as a fleet-average estimate or as an upper-bound sensitivity.
+    \item We revised the discussion of Newkirk's power-flow coefficients. We now state that these coefficients are sensitivity cases from a single Loudoun County location, not an empirical distribution from which a central fleet-average value can be drawn. We also state explicitly that the conventional-basis and AI-basis values are not measurements of the same quantity.
+    \item We expanded the inventory-coverage analysis for the 675 initially identified Baxtel-listed facilities and the 403-facility analytical sample. We now report count-based coverage in the Supplementary Information and provide restricted-data scripts for generating non-sensitive aggregate capacity-, operator-, balancing-authority-, and state-level diagnostics where these variables are available under the data-use agreement.
+    \item We separated spatial attribution limitations from temporal attribution limitations. The revised Discussion distinguishes the coarseness of balancing-authority assignment from the use of annual-average eGRID factors and flat annual facility load.
+    \item We clarified that attributional carbon intensity should not be interpreted as a measure of facility operational efficiency, PUE, utilization quality, corporate performance, or corporate net-zero accounting.
+    \item We expanded the discussion of dedicated, co-located, behind-the-meter, and market-based supply arrangements, including what the eGRID-based BA-average method can and cannot capture.
+    \item We updated the public codebase so that the default workflow implements the total-output eGRID attribution described in the manuscript. The repository now includes denominator-audit scripts and tests that prevent non-emitting generation from being inadvertently excluded from the total-output denominator.
+    \item We revised the reporting checklist and manuscript-format materials as requested by the journal.
+\end{enumerate}
+
+We attach a tracked-changes version of the manuscript and a revised reporting checklist. Below, we respond point-by-point to all comments from Reviewer~2 and Reviewer~3.
+
+\bigskip
+
+\section*{Response to Reviewer \#2}
+
+\subsection*{R2.1 --- Consistency between reported fuel mix, carbon intensity, and emissions-attribution denominator}
+
+\begin{revquote}
+``Starting with some BOTE math based on the manuscript, there's an inconsistency between your reported fuel mix and your reported carbon intensity. Lines 193--203 attribute 53.9\% of HDC electricity to fossil generation and 46\% to nuclear/renewables/biomass, with the fossil share gas at 38.2\%, coal at 15.2\%. \ldots Just taking those naive fleet values and allocating proportional weighting based on their share of total HDC demand as stated in that paragraph, I get 385 g/kWh, pretty far from 545.''
+
+\medskip
+
+``SI section 4.2 describes a generation-weighted attribution calculation: weight each plant's emission factor by its share of balancing-authority generation, and sum. That construction is mathematically total CO2 divided by the sum of all generation, nuclear and renewables included, for the entire BA. The main calculation notebook \texttt{notebooks/99\_development\_final\_review\_clean\_hyperscale\_emissions\_v6.ipynb} does not reflect the methodology as described in manuscript. Cell 3 in the codebase defines the carbon intensity of a balancing authority as emissions intensity of only the combustion powerplants, effectively ignoring all non-fossil plants in each BA. This is then multiplied by total DC energy within the BA to getting a BA level gross, which is summed across the dataset and divided by total power to get the reported value of 545.''
+
+\medskip
+
+``Computing according to the total-output basis your SI describes, I get a weighted carbon intensity of 307 g CO2/kWh, and an average grid emissions of 348 g CO2/kWh \ldots Adopting this formulation both reduces the headline carbon estimates by roughly half, and notably reverses the core interpretive claim.''
+\end{revquote}
+
+\textbf{Response.} We thank Reviewer~2 for the careful review of the emissions calculation and the public codebase. We agree that the previous implementation and the method description needed to be brought into closer alignment. The manuscript and Supplementary Information described an attributional approach in which HDC electricity demand is assigned to power plants in proportion to each plant's share of total annual generation within the balancing authority. Under that formulation, non-emitting generation remains in the denominator of the balancing-authority carbon intensity. The previous public workflow instead used a combustion-output intensity and applied it to total HDC electricity demand, producing the previously reported HDC-weighted value of approximately 545~gCO$_2$/kWh.
+
+We have now aligned the default calculation, manuscript, Supplementary Information, figures, tables, and repository. The revised default balancing-authority carbon intensity is:
+
+\[
+CI_b^{\mathrm{total}} =
+\frac{\sum_{p \in b} E_{pb}}{\sum_{p \in b} G_{pb}},
+\]
+
+where $E_{pb}$ is annual CO$_2$ emissions from plant $p$ in balancing authority $b$, and $G_{pb}$ is annual net generation from plant $p$. HDC-attributable emissions are then:
+
+\[
+E^{\mathrm{HDC}} =
+\sum_b L_b \times CI_b^{\mathrm{total}},
+\]
+
+where $L_b$ is annual HDC electricity demand in balancing authority $b$. The denominator includes all eGRID generation used in the balancing-authority attribution layer, including nuclear, renewable, and other non-combustion generation.
+
+For clarity, this is separate from the eGRID vintage update made in the previous revision. In Round~2, we incorporated EPA eGRID2023 Revision~2 in place of the earlier eGRID layer, and the manuscript numbers changed accordingly at that stage. In the present revision, we keep eGRID2023 Revision~2 as the grid dataset and align the denominator used to compute the headline attributional carbon intensity.
+
+Using EPA eGRID2023 Revision~2 and the HDC balancing-authority electricity-demand weights used in the revised manuscript, the HDC electricity-weighted total-output carbon intensity is approximately 314~gCO$_2$/kWh. This is close to, though slightly higher than, the 307~gCO$_2$/kWh value reported by the reviewer; the small difference likely reflects differences in filtering, balancing-authority coverage, or treatment of eGRID generation categories. We reproduce the eGRID2023 total-output national average of approximately 348~gCO$_2$/kWh, consistent with the reviewer's calculation.
+
+This revision changes the headline emissions estimates. Across the four facility-load scenarios, electricity demand remains approximately 68--99~TWh, but attributable CO$_2$ emissions are now approximately 21--31~Mt CO$_2$, rather than 37--54~Mt CO$_2$. Under the central scenario ($u=0.58$), HDC electricity demand remains approximately 81.8~TWh and attributable emissions are approximately 25.7~Mt CO$_2$.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Scenario} & $\boldsymbol{u}$ & \textbf{Electricity} & \textbf{Previous emissions} & \textbf{Revised emissions} \\
+ & & \textbf{(TWh)} & \textbf{(Mt CO$_2$)} & \textbf{(Mt CO$_2$)} \\
+\midrule
+Low-load & 0.48 & 67.7 & 36.9 & 21.3 \\
+Central/reference & 0.58 & 81.8 & 44.6 & 25.7 \\
+Continuity sensitivity & 0.663 & 93.5 & 51.0 & 29.4 \\
+AI-weighted high & 0.70 & 98.6 & 53.8 & 31.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+We have also revised the interpretation of the carbon-intensity comparison. The previous manuscript stated that HDC-attributed electricity was more carbon-intensive than the contemporaneous national grid average. That statement followed from the combustion-output denominator and is not appropriate under the total-output attributional method described in the paper. We have removed it. The revised manuscript states that, under the total-output basis, HDC-attributed electricity has an electricity-weighted carbon intensity of approximately 314~gCO$_2$/kWh, compared with an eGRID2023 total-output US average of approximately 348~gCO$_2$/kWh. We emphasize that this is a location-based attributional average, not a marginal emissions factor, a measure of operational efficiency, or a corporate net-zero accounting metric.
+
+The attributed generation mix is unchanged because it was already computed as a generation-share-weighted fuel mix: approximately 53.9\% fossil generation, 20.9\% nuclear generation, and 25.3\% renewable generation. Thus, the revised results preserve the core contribution of the paper---a facility-resolved, geographically explicit attributional inventory of a large and policy-relevant electricity load---while making the emissions calculation fully consistent with the stated total-output attribution method.
+
+\subsection*{R2.2 --- Code availability and reproducibility of the emissions-attribution workflow}
+
+\begin{revquote}
+``Their codebase as posted does not reflect the methodology described in the manuscript. See my author comments for more. I was able to run it locally, it output the numbers they said it did.''
+\end{revquote}
+
+\textbf{Response.} We agree that the public repository should reproduce the attributional method described in the manuscript. We have therefore updated the repository so that the default workflow computes balancing-authority carbon intensity as total eGRID CO$_2$ emissions divided by total eGRID net generation. The repository now reproduces the revised total-output values reported in the manuscript.
+
+Specifically, the revised repository includes:
+
+\begin{itemize}
+    \item a corrected default emissions-attribution workflow that computes $CI_b^{\mathrm{total}}$ from eGRID plant-level emissions and total net generation;
+    \item a denominator-audit script that reports total-output and combustion-output intensities side by side;
+    \item updated scenario-output scripts that reproduce the revised 21--31~Mt CO$_2$ range;
+    \item updated aggregate output tables used by the manuscript figures and tables;
+    \item tests that ensure non-emitting generation is retained in the total-output denominator; and
+    \item a revised reproducibility note explaining the distinction between total-output attribution, combustion-output diagnostics, and fuel-mix accounting.
+\end{itemize}
+
+We now report the combustion-output intensity only as a diagnostic quantity. It is clearly labelled as such and is not used to compute the headline HDC-attributable emissions. The repository README and notebook output cells now report the same headline values as the manuscript: 68--99~TWh, 21--31~Mt CO$_2$, 25.7~Mt CO$_2$ under the central scenario, and 314~gCO$_2$/kWh for the HDC-weighted total-output carbon intensity.
+
+\subsection*{R2.3 --- Interpretation of Newkirk power-flow coefficients and facility-load scenarios}
+
+\begin{revquote}
+``I will comment briefly on the utilization values from my previous review. The coefficients attributed to my power-flow tool (ref 55) are presented as though they form a distribution from which a central member can be drawn. They are not that. They are a sensitivity sweep computed at a single location (Loudoun County, VA) across two axes: the IT-power basis (manufacturer-rated TDP vs. measured maximum) and the server recipe (AI-training vs. the conventional active/idle recipe). \ldots These coefficients are therefore best read as upper bounds on per-facility utilization for a lean, vertically integrated operator with unusually strong incentives to size tightly to expected load, not as fleet-average estimates. \ldots I would ask that the text characterize them accurately, and note that the AI-basis values (0.62, 0.75) and the conventional-basis values (0.48, 0.58) are not measurements of the same quantity or calculated the same way.''
+\end{revquote}
+
+\textbf{Response.} We thank Reviewer~2 for this clarification and have revised the manuscript and Supplementary Information accordingly. We no longer describe the coefficients from the power-flow tool as a distribution, nor as values from which a central fleet-average member can be drawn. The revised text states that these coefficients are sensitivity cases from a single location, Loudoun County, Virginia, evaluated along two axes: IT-power basis and server recipe.
+
+We now state explicitly that the conventional-basis values and the AI-basis values are not measurements of the same quantity and should not be interpreted as a common empirical distribution. We also state that these coefficients are best interpreted as upper-bound sensitivities for a tightly sized, continuously operating, vertically integrated facility with limited contingency and no additional expansion headroom, rather than as measured fleet-average utilization rates.
+
+The revised main-text scenario table describes the four coefficients as follows:
+
+\begin{center}
+\small
+\begin{tabular}{p{0.13\textwidth}p{0.14\textwidth}p{0.54\textwidth}}
+\toprule
+\textbf{Scenario} & $\boldsymbol{u}$ & \textbf{Interpretation in revised manuscript} \\
+\midrule
+Low-load & 0.48 & Conventional-server sensitivity using manufacturer-rated IT maximum in the denominator; interpreted as a lower facility-load scenario, not a direct measurement. \\
+Central/reference & 0.58 & Conventional-server sensitivity using measured maximum IT power in the denominator and broadly consistent with our independent PUE-implied check; used as the central reference, but not interpreted as an observed fleet-average utilization. \\
+Continuity sensitivity & 0.663 & Retained for continuity with earlier server-level utilization framing; now clearly labelled as a sensitivity and not as a physically exact facility-load estimate. \\
+AI-weighted high & 0.70 & High-load sensitivity intended to bracket AI-training-heavy operation; not directly comparable to the conventional-basis coefficients because the numerator and denominator definitions differ. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+We also revised the Discussion and Limitations to state that none of the scenarios is validated against metered load for the 403 facilities. The scenario range should therefore be interpreted as a transparent sensitivity framework for converting reported facility electrical capacity into annual electricity demand, not as an empirical load-duration model.
+
+\bigskip
+
+\section*{Response to Reviewer \#3}
+
+We thank Reviewer~3 for the thoughtful and constructive assessment. We are grateful for the reviewer's statement that the Round~2 revision is noticeably stronger, that several earlier concerns were addressed convincingly, and that the paper fills a useful gap. We agree that the remaining issues required substantive revision of the text, especially the headline numbers and limitation discussion, and we have revised the manuscript accordingly.
+
+\subsection*{R3.1 --- Facility-load uncertainty, lack of metered-load validation, and harmonization of headline statistics}
+
+\begin{revquote}
+``Facility-load uncertainty still drives the national results and lacks empirical validation. The four-scenario framework ($u = 0.48, 0.58, 0.663, 0.70$), giving roughly 68, 82, 93, and 99 TWh nationally, is a real step up from tying the analysis to a single utilization estimate from LBNL server parameters. \ldots None of the scenarios is checked against independent metered load for the 403 facilities, so the range still reflects assumed conversion factors rather than observed operations. The body text, figures, and one-sentence summary also mix older point estimates \ldots Please harmonize headline statistics around the central scenario ($u = 0.58$) while keeping the full scenario range visible in the abstract, results, and discussion. A compact main-text table mapping each $u$ value to its physical meaning \ldots would help policy readers.''
+\end{revquote}
+
+\textbf{Response.} We agree. We have harmonized all headline statistics around the central scenario ($u=0.58$) while retaining the full four-scenario range in the Abstract, one-sentence summary, Results, Discussion, figures, tables, and Supplementary Information.
+
+Because of the emissions-attribution alignment described in Response~R2.1, the electricity-demand values remain as in the prior revision, but the CO$_2$ emissions values have changed. The revised headline values are:
+
+\begin{itemize}
+    \item electricity demand across scenarios: approximately 68--99~TWh;
+    \item central-scenario electricity demand: approximately 81.8~TWh;
+    \item attributable CO$_2$ emissions across scenarios: approximately 21--31~Mt CO$_2$;
+    \item central-scenario attributable CO$_2$ emissions: approximately 25.7~Mt CO$_2$; and
+    \item HDC electricity-weighted total-output carbon intensity: approximately 314~gCO$_2$/kWh.
+\end{itemize}
+
+We removed older point estimates such as 93.66~TWh and ``at least 2.10\%'' where they created ambiguity. The revised manuscript now consistently states that the central scenario corresponds to approximately 1.8\% of total US electricity consumption, while the scenario range corresponds to approximately 1.5--2.2\%.
+
+We also added a compact main-text scenario table mapping each $u$ value to its interpretation and limitations. The table clarifies that the four values are not metered-load estimates for the 403 facilities, and that the scenario range reflects uncertainty in converting reported facility electrical capacity into annual operating electricity demand. We added a sentence in the Results and Limitations stating explicitly that no facility-specific metered-load validation is available for the full sample and that the scenario range should therefore be interpreted as a sensitivity framework rather than as observed operations.
+
+\subsection*{R3.2 --- Inventory coverage from 675 initially identified facilities to 403 analytical facilities}
+
+\begin{revquote}
+``Inventory coverage (675 $\rightarrow$ 403) is a first-order limitation and needs a capacity-weighted diagnosis. The analytical sample is defined by successful geolocation and square-footage measurement: 403 of 675 Baxtel-listed HDCs. That is not a minor cleaning step. \ldots If possible, report capacity-weighted summaries for included versus excluded facilities (by operator, balancing authority, and reported capacity where available), and say plainly whether missing facilities skew small or new, or whether a meaningful share of national hyperscale capacity sits outside the sample.''
+\end{revquote}
+
+\textbf{Response.} We agree that the transition from the initially identified 675 Baxtel-listed facilities to the 403-facility analytical sample is a first-order limitation and should be described more quantitatively. We have expanded the inventory-coverage discussion in the Supplementary Information and added a concise summary to the main-text Limitations. The revised manuscript now states that the analytical sample contains 403 of the 675 initially identified Baxtel-listed facilities, or 59.7\% by count, with 272 records excluded or unresolved because we could not obtain and validate the required square-footage, power-capacity, or facility-status information for all records under the same validation standard used for the analytical sample. The Supplementary Information now includes an inventory-coverage table reporting the initial universe, validated analytical sample, excluded or unresolved records, observed-capacity analytical facilities, and imputed-capacity analytical facilities. This directly flags the 675-to-403 transition as a material source of uncertainty rather than a minor cleaning step. We also added a restricted-data diagnostic script that regenerates non-sensitive aggregate summaries by capacity, operator group, state, and balancing authority where the required variables are available and where release is allowed under the data-use agreement. This script is included so that the aggregate representativeness checks requested by the reviewer can be reproduced without releasing facility-level identifiers, coordinates, or proprietary excluded-facility records. Because many excluded records lack validated square footage, power capacity, or operational-status fields, we do not use the excluded records to extrapolate a national total or to make a strong claim that the missing facilities skew small or large. Where reported capacity or operator information is available, the restricted-data script produces aggregate capacity-weighted summaries; however, we judged that presenting a single capacity-weighted extrapolation for the full 675-facility universe would imply a level of precision not supported by the restricted and incomplete excluded-facility data. The revised text therefore states plainly that the reported national totals are estimates for the validated 403-facility analytical sample, not complete national totals for every Baxtel-listed hyperscale facility. We further clarify that incomplete coverage tends to reduce aggregate totals relative to the full facility universe, but that the net national bias also depends on the facility-load conversion and on whether excluded facilities differ systematically in capacity, operational status, operator, or location. For this reason, we continue to present the estimates as bounded scenario-based estimates for the validated analytical sample and avoid describing them as a formal lower bound for the entire US hyperscale population.
+
+\subsection*{R3.3 --- Separate spatial and temporal attribution limitations}
+
+\begin{revquote}
+``Keep spatial and temporal attribution limitations separate. Assigning each HDC to a balancing authority is reasonable for location-based attributional accounting, even though BAs are coarser than nodal interconnection boundaries. That is mainly a spatial issue. Annual-average eGRID emission factors plus flat annual facility load, by contrast, cannot capture seasonal cooling-driven demand or hour-to-hour changes in grid carbon intensity within each BA. That is a temporal issue. \ldots Please keep these two limitations separate in the discussion rather than bundling them into a vague `subgrid' critique, and note that the direction of temporal bias is region-specific.''
+\end{revquote}
+
+\textbf{Response.} We agree and have revised the Discussion and Limitations to separate spatial and temporal attribution limitations.
+
+The revised spatial-attribution limitation states that assigning each HDC to a balancing authority is appropriate for a location-based, attributional grid-mix analysis, but that balancing authorities are coarser than nodal interconnection boundaries, utility service territories, and facility-specific interconnection arrangements. Therefore, the BA-average mix may not capture local congestion, deliverability constraints, or specific power-supply arrangements.
+
+The revised temporal-attribution limitation is presented separately. It states that eGRID provides annual-average plant-level generation and emissions for a retrospective calendar year, whereas the HDC inventory covers facilities operating from May~2024 to April~2025. Annual-average attribution combined with flat annual facility load cannot capture seasonal cooling-driven demand or hour-to-hour changes in grid carbon intensity within each balancing authority. We added the reviewer's point that the direction of temporal bias is region-specific. For example, a balancing authority with a high annual renewable share may still rely on more fossil-intensive dispatch during peak cooling hours, while other regions may have lower emissions during periods of high renewable generation.
+
+We now describe hourly or subannual modeling as a distinct future extension requiring facility load profiles, weather-dependent cooling demand, and temporally resolved grid emissions. We do not bundle this temporal limitation with the spatial coarseness of BA assignment.
+
+\subsection*{R3.4 --- Attributional carbon intensity, operational efficiency, and corporate net-zero interpretation}
+
+\begin{revquote}
+``Attributional carbon intensity should not be read as operational inefficiency or corporate net-zero performance. Location-based EGW attribution is a defensible choice for physical grid-mix accounting. \ldots Corporate PPAs, RECs, and other market-based instruments are outside scope. The discussion should say this plainly so policy readers do not treat the HDC-weighted intensity as evidence of bad operator performance or as comparable to corporate net-zero claims.''
+\end{revquote}
+
+\textbf{Response.} We agree and have revised the Discussion to make this distinction explicit. Because the emissions-attribution denominator has been aligned with the total-output method, the revised manuscript no longer states that HDC-attributed electricity is more carbon-intensive than the national grid average. More generally, we now state that the HDC electricity-weighted carbon intensity should be interpreted as a location-based attributional average, not as:
+
+\begin{itemize}
+    \item a measure of facility operational efficiency;
+    \item a measure of PUE;
+    \item a measure of server utilization;
+    \item a marginal emissions factor;
+    \item a measure of operator performance; or
+    \item a market-based corporate emissions or net-zero accounting metric.
+\end{itemize}
+
+We added text clarifying that corporate PPAs, RECs, clean-energy procurement, and net-zero claims are outside the scope of the present location-based attributional analysis unless they are reflected in the physical generation mix reported in eGRID for the relevant balancing authority. We also note that a facility can have a low PUE but high location-based attributed emissions if it is located in a fossil-intensive grid region, and conversely a less efficient facility can have lower attributed emissions if located in a low-carbon grid region. The revised discussion therefore separates facility engineering performance from grid-mix attribution.
+
+\subsection*{R3.5 --- Dedicated, co-located, and behind-the-meter supply}
+
+\begin{revquote}
+``Dedicated and co-located power supply is increasingly common and is not well captured by BA-average attribution. The analysis attributes each HDC using the full BA generation mix from eGRID, not plants dedicated to a specific facility; PPAs are excluded unless temporally verified, and behind-the-meter supply may be underrepresented. \ldots Please expand the discussion of supply-side uncertainty: which dedicated or co-located arrangements eGRID-based attribution does and does not capture; the likely direction of bias \ldots and, where public interconnection or disclosure data allow, what share of the 403-facility sample may fall outside a `regional BA mix' reading.''
+\end{revquote}
+
+\textbf{Response.} We agree that dedicated, co-located, and behind-the-meter supply are increasingly important and are not fully captured by a BA-average eGRID attribution. We have expanded the Discussion and Limitations to treat this as a separate source of supply-side uncertainty.
+
+The revised text now states that the eGRID-based BA-average method captures generation that is reported to the grid and included in the annual balancing-authority generation mix. It does not identify contractual delivery to a specific HDC, does not allocate PPA generation to individual corporate buyers, and may not fully capture unreported behind-the-meter or campus-dedicated generation. We distinguish three cases:
+
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Dedicated clean or low-carbon supply.} If a facility is physically served by dedicated or co-located renewable, nuclear, or other low-carbon supply that is not reflected in the BA-average mix, the BA-average method may overstate that facility's location-specific emissions.
+    \item \textbf{Dedicated fossil or backup supply.} If a facility relies on dedicated fossil generation, unreported behind-the-meter generation, or frequent backup generation not reflected in eGRID, the BA-average method may understate emissions.
+    \item \textbf{Market-based procurement without temporally matched physical delivery.} Corporate PPAs and RECs are not allocated to individual facilities in our location-based framework unless they are reflected in physical generation and reported in the eGRID balancing-authority mix.
+\end{enumerate}
+
+We also considered the reviewer's request to report the share of the 403-facility sample that may fall outside a simple regional BA-mix reading. We do not report a quantitative share because public interconnection records, company disclosures, and facility-specific announcements are incomplete and uneven across operators and regions; using them to classify the full sample would risk introducing a second, non-systematic disclosure bias. Instead, the revised manuscript states explicitly that the BA-average method should not be read as a plant-to-facility tracing model and that dedicated or co-located supply can bias facility-specific emissions upward or downward depending on whether the unrepresented supply is low-carbon or fossil-based. We also added this limitation to the revised public dashboard documentation so that users do not interpret the BA-average attribution as facility-specific contractual or physical supply tracing.
+
+\subsection*{R3.6 --- GBRT imputation: clarify split-specific validation metrics}
+
+\begin{revquote}
+``GBRT imputation (six facilities). The Round 2 validation work is adequate for what this model actually does: grouped cross-validation, complete-case sensitivity ($\sim -1\%$ on national electricity and CO$_2$ under $u = 0.58$), and sensible framing as a gap-filling tool rather than a general capacity estimator. One remaining request: in the main text, briefly explain which cross-validation split goes with which metric \ldots so readers do not treat the low climate-held-out $R^2$ as overall model failure.''
+\end{revquote}
+
+\textbf{Response.} We thank the reviewer for recognizing that the GBRT validation is adequate for the limited role the model plays. We have added a brief clarification in the main text and Supplementary Information explaining which split corresponds to which metric.
+
+The revised text states that leave-one-balancing-authority-out validation provides a regional generalization benchmark ($R^2 \approx 0.67$), whereas leave-one-climate-category-out validation is a more conservative out-of-region stress test ($R^2 \approx 0.28$). We also reiterate that the GBRT model is used only to impute six missing capacity values among the 403 analytical facilities, and that complete-case sensitivity excluding those six facilities changes national electricity demand and CO$_2$ emissions by approximately 1\% under the central scenario. The complete-case CO$_2$ sensitivity has been recomputed using the revised total-output emissions basis and remains approximately 1\%.
+
+\subsection*{R3.7 --- Consistency of fossil-generation wording and figure labels}
+
+\begin{revquote}
+``Under the central scenario, attributed fossil generation is about 54\% by electricity-weighted attributed mix ($\sim 53.9\%$ in the revised text), not `almost 60\%' as still appears in parts of the abstract and earlier results language. Some figures also show plant-count shares (e.g., $\sim 68.5\%$ fossil) that differ from generation-weighted attribution. Please keep the wording consistent and label which metric each figure displays.''
+\end{revquote}
+
+\textbf{Response.} We agree and have revised the wording throughout the manuscript. The revised text consistently reports the electricity-weighted attributed fuel mix as approximately 53.9\% fossil generation, 20.9\% nuclear generation, and 25.3\% renewable generation. We removed phrases such as ``almost 60\%'' where they referred imprecisely to the generation-weighted attributed mix.
+
+We also revised figure captions and labels to distinguish plant-count shares from generation-share-weighted attribution. Figures that display plant counts are now labelled explicitly as plant-count summaries, whereas figures and tables used for attributional emissions accounting are labelled as generation-share-weighted fuel mixes. This change prevents readers from comparing the approximately 68.5\% fossil plant-count share with the approximately 53.9\% fossil generation-share-weighted attributed mix as though they were the same metric.
+
+\subsection*{R3.8 --- eGRID2023 is retrospective relative to the May~2024--April~2025 facility window}
+
+\begin{revquote}
+``Results use eGRID2023 for a May~2024--April~2025 facility window. State explicitly that grid-mix attribution is retrospective to the eGRID year, not a forecast of 2024--2025 dispatch.''
+\end{revquote}
+
+\textbf{Response.} We agree and have added this clarification to the Results, Methods, and Limitations. The revised manuscript states that EPA eGRID2023 Revision~2 provides the most recent complete plant-level generation, emissions, and resource-mix dataset available for the attribution layer, but that it is a retrospective calendar-year grid baseline. It should not be interpreted as a forecast or reconstruction of exact May~2024--April~2025 dispatch.
+
+We now state explicitly that the HDC facility inventory covers May~2024--April~2025, whereas the grid-attribution layer reflects calendar-year 2023 plant-level generation and emissions. This temporal mismatch is a limitation of using the most recent complete public eGRID release and motivates future work using hourly or monthly dispatch data when available.
+
+\subsection*{R3.9 --- Power-density comparison as order-of-magnitude plausibility check}
+
+\begin{revquote}
+``Treat the $\sim 1.6$ kW/m$^2$ comparison as an order-of-magnitude plausibility check only. IT-only benchmarks (e.g., Goldman Sachs) are not directly comparable to facility-inclusive electrical capacity.''
+\end{revquote}
+
+\textbf{Response.} We agree and have revised the relevant Results text. The manuscript now states that the estimated average facility power density of approximately 1.6~kW/m$^2$ is facility-inclusive and should be interpreted only as an order-of-magnitude plausibility check on the scale of reported capacities. We clarify that IT-only benchmarks, rack-density benchmarks, and facility-inclusive electrical-capacity-per-floor-area estimates are not directly interchangeable.
+
+We also revised citations and wording around industry benchmarks to avoid implying that facility-inclusive capacity density is directly validated by IT-only power-density comparisons.
+
+\subsection*{R3.10 --- Quantitative reconciliation with AI-server-specific estimates}
+
+\begin{revquote}
+``The revised scope distinction (full HDC footprint vs AI-server-specific emissions) is helpful. A short quantitative reconciliation table would still help readers.''
+\end{revquote}
+
+\textbf{Response.} We agree and have added a short reconciliation table to the Discussion and Supplementary Information. The table distinguishes our full-HDC facility-level footprint from AI-server-specific projections and all-data-center estimates. It reports, for each comparison, the system boundary, time period, electricity or emissions quantity, and reason the estimate is or is not directly comparable.
+
+The revised table makes clear that our estimate covers facility-level electricity demand for 403 validated contiguous-US HDCs across cloud, colocation, and AI-related hyperscale operations, not only AI servers. By contrast, AI-server-specific studies estimate the emissions associated with AI server deployment or operation and therefore represent a narrower computational scope. All-data-center estimates, meanwhile, include enterprise, colocation, and hyperscale facilities and therefore cover a broader sectoral boundary than our HDC-only analysis.
+
+Because the emissions-attribution basis has been revised, the central-scenario HDC estimate in this reconciliation table is now approximately 25.7~Mt CO$_2$ under $u=0.58$, with a scenario range of approximately 21--31~Mt CO$_2$.
+
+\subsection*{R3.11 --- Aggregate diagnostics under the Baxtel data-use agreement}
+
+\begin{revquote}
+``The Baxtel DUA limits facility-level verification, which I understand. Reporting aggregate, non-sensitive diagnostics (capacity distribution, BA shares, operator shares) that can be cross-checked against public interconnection queues or company disclosures would add confidence without breaching the agreement.''
+\end{revquote}
+
+\textbf{Response.} We agree and have added aggregate, non-sensitive diagnostics to the Supplementary Information and public repository. These diagnostics include capacity distributions, balancing-authority shares, state shares, and operator-group summaries for the included analytical sample and, where permitted and available, for the excluded facilities from the initial Baxtel universe.
+
+To remain compliant with the data-use agreement, we do not release facility identifiers, exact coordinates, or facility-level records. The public repository instead provides aggregate tables and scripts that can be run on the restricted data to regenerate non-sensitive summaries. These additions allow readers to assess the representativeness of the 403-facility analytical sample without disclosing commercially sensitive facility-level information.
+
+\bigskip
+
+\section*{Additional code and reproducibility changes}
+
+In addition to the specific reviewer responses above, we made the following repository-level changes to ensure consistency between the manuscript, Supplementary Information, and public codebase:
+
+\begin{itemize}
+    \item The default emissions workflow now computes total-output balancing-authority carbon intensity directly from EPA eGRID2023 Revision~2 plant-level data.
+    \item The scenario-output script now reports the revised 21--31~Mt CO$_2$ range and central-scenario value of approximately 25.7~Mt CO$_2$.
+    \item The repository includes a denominator-audit script that reports total-output and combustion-output intensities side by side.
+    \item Combustion-output intensity is retained only as a diagnostic and is clearly labelled as such.
+    \item Unit tests verify that non-emitting generation remains in the total-output denominator.
+    \item The README, reproducibility note, and data-availability statement were revised to describe the total-output attribution basis.
+    \item Aggregate coverage-diagnostic scripts were added for the restricted Baxtel universe, producing only non-sensitive outputs.
+\end{itemize}
+
+\bigskip
+
+\section*{Letter to the Editor}
+
+\begin{quote}
+Dear Dr.\ Contestabile,
+
+Thank you for the thoughtful and constructive comments on our revised manuscript. We are grateful to Reviewer~2, Reviewer~3, and the editorial team for the careful reading and for identifying the remaining issues that needed to be addressed before the manuscript could be considered further.
+
+We have revised the manuscript substantially. Most importantly, Reviewer~2 identified a need to align the emissions-attribution method described in the manuscript with the implementation in the public codebase. The manuscript described a total-generation balancing-authority attribution method, while the previous public workflow used a combustion-output carbon intensity when multiplying by total HDC electricity demand. We have revised the default calculation so that balancing-authority carbon intensity is computed as total eGRID CO$_2$ emissions divided by total eGRID net generation, including non-emitting generation in the denominator. We also clarify that the update from eGRID2022 to EPA eGRID2023 Revision~2 was already incorporated in the previous revision; the present revision keeps eGRID2023 Revision~2 fixed and aligns the denominator used for the headline emissions attribution.
+
+Relative to the Round~2 eGRID2023 combustion-output implementation, this alignment changes the HDC electricity-weighted carbon intensity from approximately 545 to approximately 314~gCO$_2$/kWh. Accordingly, the headline CO$_2$ range changes from 37--54~Mt CO$_2$ to 21--31~Mt CO$_2$ across facility-load scenarios, with the central scenario changing from approximately 44.6 to 25.7~Mt CO$_2$. The electricity-demand estimates, facility inventory, balancing-authority assignments, and attributed fuel mix are unchanged. We have revised the Abstract, one-sentence summary, Results, Discussion, Methods, figures, tables, Supplementary Information, and public repository to reflect this aligned attribution basis.
+
+We also addressed Reviewer~2's clarification regarding the power-flow coefficients used to motivate the facility-load scenarios. The revised manuscript no longer presents these coefficients as a distribution or as fleet-average measurements. Instead, we describe them as sensitivity cases from a single Loudoun County analysis and clarify that the conventional-basis and AI-basis values are not measurements of the same quantity.
+
+In response to Reviewer~3, we harmonized all headline statistics around the central scenario while retaining the full scenario range; added a main-text scenario table; expanded the inventory-coverage discussion and restricted-data diagnostics for the 675 initially identified facilities and the 403-facility analytical sample; separated spatial and temporal attribution limitations; clarified that attributional carbon intensity is not a measure of operational efficiency or corporate net-zero performance; expanded the discussion of dedicated and co-located supply; and added aggregate, non-sensitive diagnostics compatible with the Baxtel data-use agreement.
+
+We have also revised the reporting checklist and updated the public repository so that the code, manuscript, Supplementary Information, and output tables are consistent.
+
+We are grateful for the reviewers' detailed feedback, which has materially improved the transparency, reproducibility, and interpretation of the work. We hope that the revised manuscript is now suitable for further consideration at \textit{Nature Sustainability}.
+
+With kind regards,\\
+The authors
+\end{quote}
+
+\end{document}

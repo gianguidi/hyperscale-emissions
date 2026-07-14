@@ -1,12 +1,5 @@
 # Notebooks
 
-The manuscript should be reproducible through the scripts in `scripts/` and the documented schemas in `REPRO.md`.
+`FINAL_REVIEW_clean_hyperscale_emissions_v6_ROUND3_TOTAL_OUTPUT.ipynb` is the cleaned Round 3 analysis notebook used to regenerate the manuscript-facing tables and figures when the restricted facility-level inputs and local geospatial files are available.
 
-Development notebooks may be retained here for transparency, but they should not be the only way to reproduce the paper. If a notebook is included for review, it should:
-
-1. have all absolute paths removed;
-2. use EPA eGRID2023 Revision 2 as the current manuscript attribution layer;
-3. report four facility-load scenarios: 0.48, 0.58, 0.663, and 0.70;
-4. use `u=0.58` as the central manuscript scenario;
-5. use CO2 terminology consistently, not CO2e, unless the corresponding eGRID columns are explicitly CO2e;
-6. write outputs to `results/tables/` and `results/figures/` or clearly document any alternative output directory.
+Outputs are cleared from the committed notebook to avoid exposing DUA-protected facility-level records. The public aggregate outputs needed for manuscript checks are committed under `results/tables/`.

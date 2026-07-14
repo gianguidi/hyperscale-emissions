@@ -1,42 +1,25 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-
-import py_compile
-import sys
+#!/usr/bin/env python
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
-REQUIRED_DIRS = [
-    ROOT / "src" / "hyperscale_emissions",
-    ROOT / "scripts",
-    ROOT / "data" / "processed",
-    ROOT / "results" / "tables",
-    ROOT / "results" / "figures",
-]
+import importlib
+import subprocess
+import sys
+import os
 
 
 def main() -> None:
-    print("Smoke testing repository structure...")
-    for d in REQUIRED_DIRS:
-        if not d.exists():
-            raise SystemExit(f"Missing required directory: {d}")
-        print(f"  OK directory: {d.relative_to(ROOT)}")
-
-    py_files = list((ROOT / "src" / "hyperscale_emissions").glob("*.py")) + list((ROOT / "scripts").glob("*.py"))
-    for path in py_files:
-        py_compile.compile(str(path), doraise=True)
-        print(f"  OK syntax: {path.relative_to(ROOT)}")
-
-    import hyperscale_emissions  # noqa: F401
-    from hyperscale_emissions.scenario_analysis import DEFAULT_SCENARIOS  # noqa: F401
-    print("  OK import: hyperscale_emissions")
-    print(f"  Scenarios: {DEFAULT_SCENARIOS}")
-    print("Repository smoke test passed.")
-
+    root = Path(__file__).resolve().parents[1]
+    for rel in ["data/processed", "results/tables", "scripts", "src/hyperscale_emissions"]:
+        p = root / rel
+        if not p.exists():
+            raise SystemExit(f"Missing expected path: {p}")
+    sys.path.insert(0, str(root / "src"))
+    importlib.import_module("hyperscale_emissions")
+    print("Package import OK")
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(root / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    subprocess.run([sys.executable, str(root / "scripts" / "run_emissions_total_output.py"), "--outdir", str(root / "results" / "tables")], check=True, cwd=root, env=env)
+    subprocess.run([sys.executable, str(root / "scripts" / "check_paper_outputs.py")], check=True, cwd=root, env=env)
+    print("Smoke test passed")
 
 if __name__ == "__main__":
     main()

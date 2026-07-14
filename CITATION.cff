@@ -1,28 +1,10 @@
 cff-version: 1.2.0
-message: "If you use this code, please cite the following paper."
-title: "Assessing the carbon emissions of United States hyperscale data centers"
+title: "hyperscale-emissions"
+message: "If you use this code, please cite the associated manuscript."
+type: software
 authors:
   - family-names: Guidi
     given-names: Gianluca
-  - family-names: Dominici
-    given-names: Francesca
-  - family-names: Sprinkle
-    given-names: Callaway
-  - family-names: Gilmour
-    given-names: Jonathan
-  - family-names: Butler
-    given-names: Kevin
-  - family-names: Bell
-    given-names: Eric
-  - family-names: Delaney
-    given-names: Scott
-  - family-names: Bargagli-Stoffi
-    given-names: Falco J.
-version: "0.1.0"
-date-released: "2025-01-01"
-doi: ""
-abstract: >
-  Code repository for estimating electricity use and carbon emissions of
-  United States hyperscale data centers, including a capacity model for
-  facility power, emissions attribution, and figure generation.
-license: "MIT"
+repository-code: "https://github.com/gianguidi/hyperscale-emissions"
+version: "0.3.0-round3"
+date-released: "2026-07-13"

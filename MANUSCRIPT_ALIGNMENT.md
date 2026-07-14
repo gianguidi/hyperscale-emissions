@@ -1,38 +1,29 @@
-# Manuscript alignment checklist
+# Round 3 manuscript alignment
 
-Before submitting the revision, verify these items in the repository and manuscript.
+This repository is aligned with the Round 3 manuscript and response letter.
 
-## Repository issues to avoid
+## Values that must appear in the manuscript
 
-- Python files must contain real line breaks. A raw file beginning with `import os import sys` will fail immediately.
-- `README.md`, `environment.yml`, and `requirements.txt` must contain real line breaks and valid markdown/YAML/text formatting.
-- The README must not claim 5-fold CV as the primary method. The revision uses grouped validation and explicit under-/over-prediction metrics.
-- The README and scripts must use the central scenario `u=0.58`, not `u=0.663`, for manuscript-facing central figures and tables.
-- All public-facing text should say CO2, not CO2e, unless the specific eGRID column used is CO2e.
-- If a script cannot run without DUA-protected data, it should fail with a clear message that points to `REPRO.md`.
-
-## Manuscript-facing values
-
-| Quantity | Current paper value |
+| Quantity | Value |
 |---|---:|
-| Facilities | 403 |
-| Scenarios | 0.48, 0.58, 0.663, 0.70 |
-| Central scenario | 0.58 |
-| Electricity range | 68--99 TWh |
-| CO2 range | 37--54 Mt |
+| HDC count | 403 |
+| Scenario electricity range | 68--99 TWh |
+| Scenario CO2 range, total-output basis | 21--31 Mt CO2 |
+| Central/reference scenario | u = 0.58 |
 | Central electricity | 81.8 TWh |
-| Central CO2 | 44.6 Mt |
-| Weighted CI | 545 gCO2/kWh |
-| Fossil share | 53.9% |
-| Nuclear share | 20.9% |
-| Renewable share | 25.3% |
+| Central CO2, total-output basis | 25.7 Mt CO2 |
+| HDC-weighted total-output CI | 314 gCO2/kWh |
+| US eGRID total-output average | 348 gCO2/kWh |
+| HDC-weighted combustion-output CI | 543 gCO2/kWh, diagnostic only |
+| Attributed fuel mix | 53.9% fossil, 20.9% nuclear, 25.3% renewable |
 
-## Required artifacts for reviewers
+## Stale values to avoid except when explicitly labelled as previous or diagnostic
 
-- `splits.json`
-- `REPRO.md`
-- `national_utilization_scenarios.csv`
-- `state_utilization_scenarios_long.csv`
-- `validation_*_metrics.csv`
-- figure-generation scripts for Figures 1, 2/3 if applicable, and 4
-- a smoke test or GitHub Action demonstrating that the public code imports cleanly
+- 37--54 Mt CO2 as headline emissions range.
+- 44.6 Mt CO2 as central headline emissions.
+- 545 gCO2/kWh as HDC headline carbon intensity.
+- Claims that HDC-attributed electricity is more carbon-intensive than the US total-output grid average.
+
+## Revision history note
+
+The eGRID2022-to-eGRID2023 Revision 2 update was made in the previous revision. The Round 3 change keeps eGRID2023 Revision 2 fixed and aligns the denominator used for headline attribution from combustion-output to total-output.

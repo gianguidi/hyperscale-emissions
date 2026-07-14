@@ -1,61 +1,50 @@
+#!/usr/bin/env python
+from __future__ import annotations
+
 from pathlib import Path
+import sys
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-TABLE = ROOT / "results/tables/national_utilization_scenarios.csv"
-
 EXPECTED = {
-    "low_load": {"u": 0.48, "twh": 67.7, "mt": 36.9},
-    "central": {"u": 0.58, "twh": 81.8, "mt": 44.6},
-    "continuity_u0663": {"u": 0.663, "twh": 93.5, "mt": 51.0},
-    "ai_weighted_high": {"u": 0.70, "twh": 98.6, "mt": 53.8},
+    "low_load": (67.7, 21.3),
+    "central_reference": (81.8, 25.7),
+    "continuity_sensitivity": (93.5, 29.4),
+    "ai_weighted_high": (98.6, 31.0),
 }
 
-TOL_TWH = 0.20
-TOL_MT = 0.20
+
+def fail(msg: str) -> None:
+    print(f"ERROR: {msg}", file=sys.stderr)
+    raise SystemExit(1)
 
 
-def get_value(row, candidates):
-    for c in candidates:
-        if c in row.index:
-            return row[c]
-    raise KeyError(f"None of these columns found: {candidates}")
-
-
-def main():
-    if not TABLE.exists():
-        raise SystemExit(f"CHECK FAILED: Missing {TABLE}; run scripts/run_utilization_scenarios.py first.")
-
-    print(f"Checking {TABLE}")
-    df = pd.read_csv(TABLE)
-
-    if "scenario" not in df.columns:
-        raise SystemExit("CHECK FAILED: missing scenario column.")
-
-    for scenario, exp in EXPECTED.items():
-        sub = df[df["scenario"] == scenario]
-        if sub.empty:
-            raise SystemExit(f"CHECK FAILED: missing scenario {scenario}.")
-
-        row = sub.iloc[0]
-
-        u = get_value(row, ["utilization_u", "u"])
-        twh = get_value(row, ["total_energy_twh", "electricity_twh"])
-        mt = get_value(row, ["total_co2_mt", "co2_mt"])
-
-        if abs(u - exp["u"]) > 1e-6:
-            raise SystemExit(f"CHECK FAILED: Scenario {scenario}: u={u}, expected {exp['u']}")
-
-        if abs(twh - exp["twh"]) > TOL_TWH:
-            raise SystemExit(f"CHECK FAILED: Scenario {scenario}: TWh={twh:.3f}, expected {exp['twh']}")
-
-        if abs(mt - exp["mt"]) > TOL_MT:
-            raise SystemExit(f"CHECK FAILED: Scenario {scenario}: Mt={mt:.3f}, expected {exp['mt']}")
-
-        print(f"  OK {scenario}: u={u}, TWh={twh:.3f}, Mt={mt:.3f}")
-
-    print("Paper-output checks passed.")
-
+def main() -> None:
+    p = Path("results/tables/scenario_totals_round3_total_output.csv")
+    if not p.exists():
+        fail(f"Missing {p}. Run scripts/run_emissions_total_output.py first.")
+    df = pd.read_csv(p)
+    required = {"scenario", "electricity_twh", "co2_mt_total_output", "ci_g_per_kwh_total_output"}
+    missing = required - set(df.columns)
+    if missing:
+        fail(f"Scenario table missing columns: {missing}")
+    for scenario, (target_twh, target_mt) in EXPECTED.items():
+        row = df.loc[df["scenario"] == scenario]
+        if row.empty:
+            fail(f"Missing scenario: {scenario}")
+        twh = float(row["electricity_twh"].iloc[0])
+        mt = float(row["co2_mt_total_output"].iloc[0])
+        if abs(twh - target_twh) > 0.2:
+            fail(f"{scenario} electricity {twh:.3f} differs from expected {target_twh:.1f}")
+        if abs(mt - target_mt) > 0.2:
+            fail(f"{scenario} CO2 {mt:.3f} differs from expected {target_mt:.1f}")
+    central = df.loc[df["scenario"] == "central_reference"].iloc[0]
+    ci = float(central["ci_g_per_kwh_total_output"])
+    if abs(ci - 314.0) > 2.0:
+        fail(f"Weighted total-output CI {ci:.3f} is not approximately 314 gCO2/kWh")
+    audit = pd.read_csv("results/tables/denominator_audit_round3.csv")
+    if not (audit["basis"] == "combustion_output_diagnostic").any():
+        fail("Denominator audit missing combustion-output diagnostic row")
+    print("All Round 3 manuscript-output checks passed.")
 
 if __name__ == "__main__":
     main()
