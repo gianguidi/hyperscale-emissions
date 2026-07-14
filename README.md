@@ -17,12 +17,26 @@ Using the 403-facility analytical sample, EPA eGRID2023 Revision 2, and four fac
 
 | Scenario | Facility-load coefficient | Electricity (TWh) | CO2 (Mt) |
 |---|---:|---:|---:|
-| Low-load | 0.480 | 67.7 | 36.9 |
-| Central | 0.580 | 81.8 | 44.6 |
-| Continuity / upper conventional | 0.663 | 93.5 | 51.0 |
-| AI-weighted high | 0.700 | 98.6 | 53.8 |
+| Low-load | 0.480 | 67.7 | 21.3 |
+| Central/reference | 0.580 | 81.8 | 25.7 |
+| Continuity sensitivity | 0.663 | 93.5 | 29.4 |
+| AI-weighted high | 0.700 | 98.6 | 31.0 |
 
 The central scenario is `u = 0.58`. The `u = 0.663` scenario is retained for continuity with earlier drafts and with server-level effective-utilization assumptions, but it is not treated as the central facility-level estimate.
+
+
+## Carbon-intensity denominator
+
+The default workflow uses total-output balancing-authority carbon intensity from EPA eGRID2023 Revision 2:
+
+`total reported CO2 emissions / total reported net generation`
+
+This total-output denominator includes nuclear, renewable, and other non-combustion generation. Combustion-output intensity is retained only as a diagnostic and is not used for headline HDC-attributable emissions.
+
+The current workflow reproduces:
+- HDC-weighted total-output CI: approximately 314 gCO2/kWh
+- US eGRID total-output average: approximately 348 gCO2/kWh
+- combustion-output diagnostic: approximately 543 gCO2/kWh
 
 ## Repository structure
 
@@ -114,9 +128,9 @@ The DUA-protected facility-level dataset is not publicly released. The public re
 - aggregated state and balancing-authority outputs;
 - synthetic or anonymized example inputs that allow scripts to run without exposing sensitive coordinates or facility identifiers.
 
-## Revision analyses (Round 2)
+## Revision analyses (Round 3)
 
-Additional scripts used for the second-round revision:
+Additional scripts used for the Round 3 total-output eGRID attribution revision:
 
 - `scripts/run_utilization_scenarios.py`  
   Computes national, state, and balancing-authority electricity/emissions totals under multiple facility-load scenarios.
