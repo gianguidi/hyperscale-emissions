@@ -42,6 +42,20 @@ where the denominator includes all reported net generation in the balancing auth
 
 The HDC-weighted attributed fuel mix is approximately **53.9% fossil**, **20.9% nuclear**, and **25.3% renewable**.
 
+
+## Carbon-intensity denominator
+
+The default workflow uses total-output balancing-authority carbon intensity from EPA eGRID2023 Revision 2:
+
+`total reported CO2 emissions / total reported net generation`
+
+This total-output denominator includes nuclear, renewable, and other non-combustion generation. Combustion-output intensity is retained only as a diagnostic and is not used for headline HDC-attributable emissions.
+
+The current workflow reproduces:
+- HDC-weighted total-output CI: approximately 314 gCO2/kWh
+- US eGRID total-output average: approximately 348 gCO2/kWh
+- combustion-output diagnostic: approximately 543 gCO2/kWh
+
 ## Repository structure
 
 ```text
@@ -120,6 +134,21 @@ The full notebook and map-generation workflow requires the DUA-protected 403-fac
 ```text
 notebooks/FINAL_REVIEW_clean_hyperscale_emissions_v6_ROUND3_TOTAL_OUTPUT.ipynb
 ```
+## Data availability
+
+The DUA-protected facility-level dataset is not publicly released. The public repository should include:
+
+- all code used for capacity modeling, validation, scenario analysis, and figures;
+- split artifacts (`splits.json`) and validation tables;
+- aggregated state and balancing-authority outputs;
+- synthetic or anonymized example inputs that allow scripts to run without exposing sensitive coordinates or facility identifiers.
+
+## Revision analyses (Round 3)
+
+Additional scripts used for the Round 3 total-output eGRID attribution revision:
+
+- `scripts/run_utilization_scenarios.py`  
+  Computes national, state, and balancing-authority electricity/emissions totals under multiple facility-load scenarios.
 
 The notebook outputs the manuscript-facing figures and aggregate tables. Facility-level outputs should **not** be committed.
 
