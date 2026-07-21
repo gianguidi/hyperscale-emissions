@@ -33,7 +33,6 @@ class CapacityModelConfig:
             self.predictors = [
                 "FILLED_baxtel_total_building_sqft",
                 "climate_category",
-                "company_name",
                 "region_B_1",
             ]
 
@@ -50,7 +49,7 @@ class CapacityModelResults:
 
 def build_preprocessor() -> ColumnTransformer:
     numerical_features = ["FILLED_baxtel_total_building_sqft"]
-    categorical_features = ["climate_category", "company_name", "region_B_1"]
+    categorical_features = ["climate_category", "region_B_1"]
     numerical_transformer = Pipeline([
         ("imputer", SimpleImputer(strategy="mean")),
         ("scaler", StandardScaler()),
@@ -94,6 +93,9 @@ def train_capacity_model(df_with_power: pd.DataFrame, config: CapacityModelConfi
     metrics = {
         "cv_rmse": mean_cv_rmse,
         "test_mse": float(mean_squared_error(y_test, y_pred)),
+        "test_rmse": float(
+            mean_squared_error(y_test, y_pred) ** 0.5
+        ),
         "test_r2": float(r2_score(y_test, y_pred)),
         "test_mae": float(mean_absolute_error(y_test, y_pred)),
         "test_mape": float(mean_absolute_percentage_error(y_test, y_pred)),
