@@ -63,6 +63,13 @@ def main() -> None:
         print(f"{key}: {value:.4f}")
     plot_predicted_vs_observed(results, out_path=str(OUT_FIG))
     df_with_predictions = predict_missing_capacity(df, cfg, results)
+    n_imputed = int(
+        df_with_predictions["is_imputed_capacity"].sum()
+    )
+    print(
+        f"Imputed capacities: {n_imputed} "
+        f"of {len(df_with_predictions)}"
+    )
     ensure_dir(OUT_DATA.parent)
     df_with_predictions.to_csv(OUT_DATA, index=False)
     print(f"Wrote {OUT_DATA}")
