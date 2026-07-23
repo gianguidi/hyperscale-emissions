@@ -20,7 +20,7 @@ Using the 403-facility analytical sample, EPA eGRID2023 Revision 2, and the **to
 | Low-load | 0.480 | 67.7 | 21.3 |
 | Central/reference | 0.580 | 81.8 | 25.7 |
 | Continuity sensitivity | 0.663 | 93.5 | 29.4 |
-| AI-weighted high | 0.700 | 98.6 | 31.0 |
+| AI-weighted high | 0.700 | 98.7 | 31.0 |
 
 The central scenario is `u = 0.58`. The `u = 0.663` scenario is retained for continuity with earlier server-level utilization framing and is not treated as the central facility-level estimate.
 
