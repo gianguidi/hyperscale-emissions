@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -20,15 +21,41 @@ from hyperscale_emissions.capacity_model import (  # noqa: E402
 )
 from hyperscale_emissions.utils import ensure_dir  # noqa: E402
 
-DATA_PATH = ROOT / "data" / "processed" / "all_facilities.csv"
+PROCESSED_DATA_PATH = ROOT / "data" / "processed" / "all_facilities.csv"
+SYNTHETIC_DATA_PATH = ROOT / "data" / "synthetic" / "all_facilities.csv"
 OUT_FIG = ROOT / "results" / "figures" / "hyp_model_performance.pdf"
 OUT_DATA = ROOT / "data" / "processed" / "facilities_with_predicted_capacity.csv"
 
 
+def resolve_data_path() -> Path:
+    """Return an available facility dataset, preferring processed data."""
+    override = os.environ.get("HYPERSCALE_FACILITIES_PATH")
+
+    candidates = (
+        [Path(override).expanduser()]
+        if override
+        else [
+            PROCESSED_DATA_PATH,
+            SYNTHETIC_DATA_PATH,
+        ]
+    )
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    expected = ", ".join(str(candidate) for candidate in candidates)
+    raise SystemExit(
+        "Missing facility input. Checked: "
+        f"{expected}\n"
+        "Run scripts/make_synthetic_403_fixture.py or see REPRO.md."
+    )
+
+
 def main() -> None:
-    if not DATA_PATH.exists():
-        raise SystemExit(f"Missing input: {DATA_PATH}\nSee REPRO.md for the required schema.")
-    df = pd.read_csv(DATA_PATH)
+    data_path = resolve_data_path()
+    print(f"Input data: {data_path}")
+    df = pd.read_csv(data_path)
     cfg = CapacityModelConfig()
     df_with, _ = split_with_and_without_power(df, target="current_mw")
     results = train_capacity_model(df_with, cfg)
