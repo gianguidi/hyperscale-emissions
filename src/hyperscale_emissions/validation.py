@@ -12,6 +12,8 @@ from sklearn.model_selection import GroupKFold, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from .capacity_model import gbrt_parameters
+
 NUMERICAL_FEATURES = ["FILLED_baxtel_total_building_sqft"]
 CATEGORICAL_FEATURES = ["climate_category", "region_B_1"]
 PREDICTORS = NUMERICAL_FEATURES + CATEGORICAL_FEATURES
@@ -34,7 +36,12 @@ def build_pipeline() -> Pipeline:
     ])
     return Pipeline([
         ("preprocessor", preprocessor),
-        ("regressor", GradientBoostingRegressor(n_estimators=100, random_state=42)),
+        (
+            "regressor",
+            GradientBoostingRegressor(
+                **gbrt_parameters()
+            ),
+        ),
     ])
 
 

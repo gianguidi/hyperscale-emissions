@@ -3,6 +3,7 @@ import pandas as pd
 
 from hyperscale_emissions.capacity_model import (
     CapacityModelConfig,
+    gbrt_parameters,
     predict_missing_capacity,
     train_capacity_model,
 )
@@ -52,6 +53,12 @@ def test_public_model_matches_disclosed_predictors_and_emits_test_rmse() -> None
         expected_rmse,
     )
     assert results.metrics["test_rmse"] > 0
+
+    regressor = results.model.named_steps["regressor"]
+    actual_parameters = regressor.get_params(deep=False)
+
+    for name, expected in gbrt_parameters().items():
+        assert actual_parameters[name] == expected
 
 
     missing_row = df.iloc[[0]].copy()

@@ -139,7 +139,7 @@ notebooks/FINAL_REVIEW_clean_hyperscale_emissions_v6_ROUND3_TOTAL_OUTPUT.ipynb
 The DUA-protected facility-level dataset is not publicly released. The public repository should include:
 
 - all code used for capacity modeling, validation, scenario analysis, and figures;
-- split artifacts (`splits.json`) and validation tables;
+- a deterministic public synthetic split artifact (`results/tables/synthetic_validation/splits.json`) and validation tables;
 - aggregated state and balancing-authority outputs;
 - synthetic or anonymized example inputs that allow scripts to run without exposing sensitive coordinates or facility identifiers.
 

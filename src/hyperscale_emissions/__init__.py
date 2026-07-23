@@ -5,6 +5,7 @@ __version__ = "0.3.0-round3"
 from .attribution import (
     LB_PER_MWH_TO_G_PER_KWH,
     compute_weighted_ci,
+    fill_undefined_combustion_ci,
     generation_weighted_national_ci,
     read_egrid_ba_factors,
 )

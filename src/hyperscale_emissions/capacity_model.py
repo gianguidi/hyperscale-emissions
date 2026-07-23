@@ -17,6 +17,44 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from .utils import ensure_dir
 
 
+# Complete GradientBoostingRegressor specification used in the manuscript.
+# Values matching scikit-learn defaults are written explicitly so results do
+# not depend on implicit defaults changing between software versions.
+GBRT_PARAMETERS = {
+    "loss": "squared_error",
+    "learning_rate": 0.1,
+    "n_estimators": 100,
+    "subsample": 1.0,
+    "min_samples_split": 2,
+    "min_samples_leaf": 1,
+    "min_weight_fraction_leaf": 0.0,
+    "max_depth": 3,
+    "min_impurity_decrease": 0.0,
+    "init": None,
+    "random_state": 42,
+    "max_features": None,
+    "alpha": 0.9,
+    "verbose": 0,
+    "max_leaf_nodes": None,
+    "warm_start": False,
+    "validation_fraction": 0.1,
+    "n_iter_no_change": None,
+    "tol": 0.0001,
+    "ccp_alpha": 0.0,
+}
+
+
+def gbrt_parameters(
+    n_estimators: int = 100,
+    random_state: int = 42,
+) -> dict[str, object]:
+    """Return the fully explicit manuscript GBRT specification."""
+    parameters = GBRT_PARAMETERS.copy()
+    parameters["n_estimators"] = n_estimators
+    parameters["random_state"] = random_state
+    return parameters
+
+
 @dataclass
 class CapacityModelConfig:
     """Configuration for the hyperscale capacity model."""
@@ -81,7 +119,15 @@ def train_capacity_model(df_with_power: pd.DataFrame, config: CapacityModelConfi
 
     model = Pipeline([
         ("preprocessor", build_preprocessor()),
-        ("regressor", GradientBoostingRegressor(n_estimators=config.n_estimators, random_state=config.random_state)),
+        (
+            "regressor",
+            GradientBoostingRegressor(
+                **gbrt_parameters(
+                    n_estimators=config.n_estimators,
+                    random_state=config.random_state,
+                )
+            ),
+        ),
     ])
 
     cv = KFold(n_splits=config.n_splits_cv, shuffle=True, random_state=config.random_state)

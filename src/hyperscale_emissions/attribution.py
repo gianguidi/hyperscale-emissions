@@ -116,6 +116,59 @@ def generation_weighted_national_ci(
     )
 
 
+
+def fill_undefined_combustion_ci(
+    factors: pd.DataFrame,
+    total_col: str = "ci_total_g_per_kwh",
+    combustion_col: str = "ci_combustion_g_per_kwh",
+    annual_co2_col: str = "BACO2AN",
+    flag_col: str = "combustion_ci_filled_noncombustion",
+) -> pd.DataFrame:
+    """Fill combustion diagnostic rates only for non-combustion BAs.
+
+    eGRID combustion-output rates are undefined when a BA reports no annual
+    CO2 emissions from combustion. For this diagnostic only, those undefined
+    values are set to the corresponding total-output rate, ordinarily zero.
+    Missing values with positive or unknown annual CO2 are not filled.
+    """
+    required = {
+        total_col,
+        combustion_col,
+        annual_co2_col,
+    }
+    missing = sorted(required.difference(factors.columns))
+    if missing:
+        raise KeyError(
+            f"Missing columns for combustion diagnostic handling: {missing}"
+        )
+
+    out = factors.copy()
+
+    total_ci = pd.to_numeric(
+        out[total_col],
+        errors="coerce",
+    )
+    combustion_ci = pd.to_numeric(
+        out[combustion_col],
+        errors="coerce",
+    )
+    annual_co2 = pd.to_numeric(
+        out[annual_co2_col],
+        errors="coerce",
+    )
+
+    fill_mask = (
+        combustion_ci.isna()
+        & annual_co2.notna()
+        & annual_co2.le(0)
+        & total_ci.notna()
+    )
+
+    out[flag_col] = fill_mask.astype(bool)
+    out.loc[fill_mask, combustion_col] = total_ci.loc[fill_mask]
+
+    return out
+
 def find_egrid_ba_sheet(path: str | Path) -> str:
     """Return the first Excel sheet that contains the BA-level eGRID columns."""
     xls = pd.ExcelFile(path)
@@ -141,7 +194,7 @@ def read_egrid_ba_factors(path: str | Path, sheet_name: str | None = None) -> pd
     df = pd.read_excel(path, sheet_name=sheet_name)
     df = _normalise_columns(df)
     colmap = {c.upper(): c for c in df.columns}
-    needed = ["BACODE", "BACO2RTA", "BACO2CRT"]
+    needed = ["BACODE", "BACO2AN", "BACO2RTA", "BACO2CRT"]
     missing = [c for c in needed if c not in colmap]
     if missing:
         raise ValueError(f"Missing required eGRID columns: {missing}")
@@ -162,6 +215,24 @@ def read_egrid_ba_factors(path: str | Path, sheet_name: str | None = None) -> pd
         * LB_PER_MWH_TO_G_PER_KWH
     )
 
+    out = fill_undefined_combustion_ci(out)
+
+    unresolved_combustion = out[
+        "ci_combustion_g_per_kwh"
+    ].isna()
+    if unresolved_combustion.any():
+        unresolved_codes = sorted(
+            out.loc[unresolved_combustion, "BACODE"]
+            .dropna()
+            .astype(str)
+            .unique()
+            .tolist()
+        )
+        raise ValueError(
+            "Undefined combustion-output CI remains for BA codes: "
+            f"{unresolved_codes}"
+        )
+
     keep = [
         column
         for column in [
@@ -173,6 +244,7 @@ def read_egrid_ba_factors(path: str | Path, sheet_name: str | None = None) -> pd
             "BACO2CRT",
             "ci_total_g_per_kwh",
             "ci_combustion_g_per_kwh",
+            "combustion_ci_filled_noncombustion",
         ]
         if column in out.columns
     ]

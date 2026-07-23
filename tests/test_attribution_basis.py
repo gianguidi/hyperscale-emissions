@@ -3,6 +3,7 @@ import pytest
 
 from hyperscale_emissions.attribution import (
     compute_weighted_ci,
+    fill_undefined_combustion_ci,
     generation_weighted_national_ci,
 )
 
@@ -30,6 +31,38 @@ def test_total_output_keeps_non_emitting_generation_in_denominator():
         national_factors,
         "ci_total_g_per_kwh",
     ) == 200.0
+
+    diagnostic_factors = pd.DataFrame(
+        {
+            "BACODE": ["ZERO", "UNKNOWN"],
+            "BACO2AN": [0.0, 10.0],
+            "ci_total_g_per_kwh": [0.0, 300.0],
+            "ci_combustion_g_per_kwh": [float("nan"), float("nan")],
+        }
+    )
+    diagnostic_factors = fill_undefined_combustion_ci(
+        diagnostic_factors
+    )
+
+    assert (
+        diagnostic_factors.loc[
+            diagnostic_factors["BACODE"] == "ZERO",
+            "ci_combustion_g_per_kwh",
+        ].iloc[0]
+        == 0.0
+    )
+    assert bool(
+        diagnostic_factors.loc[
+            diagnostic_factors["BACODE"] == "ZERO",
+            "combustion_ci_filled_noncombustion",
+        ].iloc[0]
+    )
+    assert pd.isna(
+        diagnostic_factors.loc[
+            diagnostic_factors["BACODE"] == "UNKNOWN",
+            "ci_combustion_g_per_kwh",
+        ].iloc[0]
+    )
 
     duplicated_factors = pd.concat(
         [factors, factors],
