@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -14,15 +15,41 @@ if str(SRC) not in sys.path:
 
 from hyperscale_emissions.validation import run_grouped_cv, run_random_split  # noqa: E402
 
-DATA_FILE = ROOT / "data" / "processed" / "all_facilities.csv"
+PROCESSED_DATA_FILE = ROOT / "data" / "processed" / "all_facilities.csv"
+SYNTHETIC_DATA_FILE = ROOT / "data" / "synthetic" / "all_facilities.csv"
 OUTDIR = ROOT / "results" / "tables"
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 
+def resolve_data_file() -> Path:
+    """Return an available facility dataset, preferring processed data."""
+    override = os.environ.get("HYPERSCALE_FACILITIES_PATH")
+
+    candidates = (
+        [Path(override).expanduser()]
+        if override
+        else [
+            PROCESSED_DATA_FILE,
+            SYNTHETIC_DATA_FILE,
+        ]
+    )
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    expected = ", ".join(str(candidate) for candidate in candidates)
+    raise SystemExit(
+        "Missing facility input. Checked: "
+        f"{expected}\n"
+        "Run scripts/make_synthetic_403_fixture.py or see REPRO.md."
+    )
+
+
 def main() -> None:
-    if not DATA_FILE.exists():
-        raise SystemExit(f"Missing input: {DATA_FILE}\nSee REPRO.md for schema.")
-    df = pd.read_csv(DATA_FILE)
+    data_file = resolve_data_file()
+    print(f"Input data: {data_file}")
+    df = pd.read_csv(data_file)
 
     random_preds, random_out = run_random_split(df)
     random_preds.to_csv(OUTDIR / "validation_random_predictions.csv", index=False)
