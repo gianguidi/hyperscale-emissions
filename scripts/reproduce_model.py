@@ -40,7 +40,16 @@ def main() -> None:
     pd.DataFrame([random_out["metrics"]]).to_csv(
         args.outdir / "validation_random_metrics.csv", index=False
     )
-    artifacts = {"random": random_out["splits"]}
+    artifacts = {
+        "artifact_scope": "public_synthetic_fixture",
+        "input": args.input.as_posix(),
+        "description": (
+            "Deterministic validation split metadata for the public "
+            "403-row synthetic fixture. These indices do not identify "
+            "restricted analytical facilities."
+        ),
+        "random": random_out["splits"],
+    }
 
     for group_col, stem in [
         ("region_B_1", "ba"),
@@ -55,10 +64,13 @@ def main() -> None:
         )
         artifacts[stem] = out["splits"]
 
-    with (args.outdir / "splits_synthetic.json").open("w", encoding="utf-8") as handle:
+    split_path = args.outdir / "splits.json"
+    with split_path.open("w", encoding="utf-8") as handle:
         json.dump(artifacts, handle, indent=2)
+        handle.write("\n")
 
     print(f"Synthetic validation outputs written to {args.outdir}")
+    print(f"Deterministic split artifact written to {split_path}")
 
 
 if __name__ == "__main__":

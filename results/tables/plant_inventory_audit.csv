@@ -1,0 +1,11 @@
+scope,metric,value
+public_figure_source,rows,3318
+public_figure_source,positive_generation_rows,3214
+public_figure_source,zero_generation_rows,22
+public_figure_source,negative_generation_rows,82
+public_figure_source,missing_generation_rows,0
+raw_egrid_plant_sheet,rows,12612
+raw_egrid_plant_sheet,positive_generation_assignable_ba,11545
+hdc_ba_attribution_layer,represented_ba_codes,23
+hdc_ba_attribution_layer,positive_generation_assignable_ba_rows,8802
+hdc_ba_attribution_layer,unique_plant_ids,8802

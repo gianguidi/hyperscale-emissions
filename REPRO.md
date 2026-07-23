@@ -90,3 +90,70 @@ repository. Public reproduction uses synthetic facility records for capacity
 model and validation checks, together with aggregated state- and
 balancing-authority outputs for the emissions results. No individual facility
 coordinates are distributed in the public package.
+
+## Capacity-model specification
+
+The public capacity model uses
+`sklearn.ensemble.GradientBoostingRegressor` under scikit-learn 1.9.0.
+Every effective, non-deprecated estimator parameter used by the analysis is
+specified explicitly in `src/hyperscale_emissions/capacity_model.py`,
+including values that coincide with scikit-learn defaults. The deprecated
+`criterion` parameter is intentionally omitted because it has no effect in
+scikit-learn 1.9.0. The model uses 100 estimators, learning rate 0.1,
+squared-error loss, subsample 1.0, maximum tree depth 3, and random seed 42.
+The preprocessing pipeline mean-imputes and standardizes building area,
+most-frequent-imputes categorical predictors, and one-hot encodes categories
+with unknown-category handling enabled.
+
+## Validation split artifact
+
+Running:
+
+```bash
+python scripts/make_synthetic_403_fixture.py
+python scripts/reproduce_model.py
+```
+
+generates the deterministic public artifact:
+
+`results/tables/synthetic_validation/splits.json`
+
+The committed artifact records the fixed random 85/15 split and grouped
+validation folds for the public synthetic fixture. Its indices refer only to
+synthetic rows and do not identify restricted analytical facilities. Applying
+the same scripts to an authorized facility dataset regenerates the
+corresponding dataset-specific split metadata.
+
+## Combustion-output diagnostic convention
+
+The combustion-output rate is retained only as a diagnostic. For a balancing
+authority with an undefined combustion-output rate, zero reported annual CO2
+emissions, and a valid total-output rate, the diagnostic rate is set to that
+BA's total-output rate, ordinarily zero. The output flag
+`combustion_ci_filled_noncombustion` records each such replacement.
+Undefined combustion-output rates associated with positive or unknown annual
+CO2 emissions are not silently filled and instead cause validation to fail.
+
+## Plant inventory audit
+
+The official EPA eGRID2023 Revision 2 plant sheet contains 12,612 records.
+Of these, 11,545 have positive reported annual net generation and an
+assignable balancing-authority code. Restricting the inventory to the
+23 balancing authorities represented by the public HDC load weights yields
+8,802 unique positive-generation plant records.
+
+`data/processed/plants_with_regions.csv` is a separate cartographic source
+file used for figure preparation. It contains 3,318 rows: 3,214 with positive
+generation, 22 with zero generation, and 82 with negative net generation.
+It is not the full attributional inventory.
+
+The distinction is reproduced with:
+
+```bash
+python scripts/audit_plant_inventory.py \
+  --egrid-xlsx /path/to/egrid2023_data_rev2.xlsx \
+  --expected-attribution-count 8802
+```
+
+The resulting audit table is stored at
+`results/tables/plant_inventory_audit.csv`.
