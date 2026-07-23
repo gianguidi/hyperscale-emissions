@@ -29,3 +29,6 @@ data/processed/df_emissions_per_dc_SF.csv
 
 # Old notebooks with stale Round 2 outputs
 notebooks/99_development_final_review_clean_hyperscale_emissions_v6.ipynb
+data/processed/df_emissions_per_dc_SF.geojson
+data/processed/*per_dc*.geojson
+data/processed/*facility*coordinates*.geojson
