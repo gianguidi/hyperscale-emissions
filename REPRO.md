@@ -81,3 +81,12 @@ Outputs are written to `results/tables/restricted_coverage/`, which is gitignore
 ## Notebook
 
 The notebook under `notebooks/` is output-cleared for public release. It should be run only in a local environment with restricted data available.
+
+## Restricted facility-point data
+
+The facility-level point geometry used to prepare manuscript Figure 1a is
+protected by the facility-data DUA and is not included in the public
+repository. Public reproduction uses synthetic facility records for capacity
+model and validation checks, together with aggregated state- and
+balancing-authority outputs for the emissions results. No individual facility
+coordinates are distributed in the public package.
