@@ -3,6 +3,7 @@ import pandas as pd
 
 from hyperscale_emissions.capacity_model import (
     CapacityModelConfig,
+    predict_missing_capacity,
     train_capacity_model,
 )
 
@@ -51,3 +52,29 @@ def test_public_model_matches_disclosed_predictors_and_emits_test_rmse() -> None
         expected_rmse,
     )
     assert results.metrics["test_rmse"] > 0
+
+
+    missing_row = df.iloc[[0]].copy()
+    missing_row["current_mw"] = np.nan
+    all_rows = pd.concat(
+        [df, missing_row],
+        ignore_index=True,
+    )
+
+    predicted = predict_missing_capacity(
+        all_rows,
+        cfg,
+        results,
+    )
+
+    assert "is_imputed_capacity" in predicted.columns
+    assert predicted["is_imputed_capacity"].dtype == bool
+    assert not predicted.loc[: n - 1, "is_imputed_capacity"].any()
+    assert bool(
+        predicted.loc[n, "is_imputed_capacity"]
+    )
+    assert predicted.loc[n, "predicted_current_mw"] >= 0
+    assert np.allclose(
+        predicted.loc[: n - 1, "predicted_current_mw"],
+        predicted.loc[: n - 1, "current_mw"],
+    )

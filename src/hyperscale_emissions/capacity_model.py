@@ -143,10 +143,47 @@ def predict_missing_capacity(
     results: CapacityModelResults,
     target_col: str = "current_mw",
     new_col: str = "predicted_current_mw",
+    imputed_flag_col: str = "is_imputed_capacity",
 ) -> pd.DataFrame:
-    df_with, df_without = split_with_and_without_power(df_all, target=target_col)
-    if not df_without.empty:
-        X_missing = df_without[config.predictors].copy()
-        df_without[new_col] = np.maximum(results.model.predict(X_missing), 0)
-    df_with[new_col] = df_with[target_col]
-    return pd.concat([df_with, df_without], axis=0).sort_index()
+    """Fill the model-output column and record explicit prediction provenance.
+
+    ``imputed_flag_col`` is True only when the original target value was
+    missing and ``new_col`` was therefore supplied by the fitted model.
+    Observed capacities are copied unchanged into ``new_col``.
+    """
+    if target_col not in df_all.columns:
+        raise KeyError(f"Missing capacity target column: {target_col}")
+
+    missing_predictors = [
+        column
+        for column in config.predictors
+        if column not in df_all.columns
+    ]
+    if missing_predictors:
+        raise KeyError(
+            f"Missing model predictor columns: {missing_predictors}"
+        )
+
+    out = df_all.copy()
+    observed_capacity = pd.to_numeric(
+        out[target_col],
+        errors="coerce",
+    )
+    imputed_mask = observed_capacity.isna()
+
+    out[new_col] = observed_capacity
+
+    if imputed_mask.any():
+        X_missing = out.loc[
+            imputed_mask,
+            config.predictors,
+        ].copy()
+        predictions = np.maximum(
+            results.model.predict(X_missing),
+            0,
+        )
+        out.loc[imputed_mask, new_col] = predictions
+
+    out[imputed_flag_col] = imputed_mask.astype(bool)
+
+    return out.sort_index()
