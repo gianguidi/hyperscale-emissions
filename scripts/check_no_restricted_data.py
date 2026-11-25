@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-SCAN_PREFIXES = ("data/processed/", "public/", "results/tables/")
+SCAN_PREFIXES = ("data/processed/", "public/", "results/tables/", "notebooks/")
 SYNTHETIC_PREFIXES = ("data/synthetic/", "tests/fixtures/")
 ALLOWED_GEOJSON = {"data/processed/gdf_EPA_totals.geojson"}
 RESTRICTED_HEADERS = {
@@ -28,6 +28,10 @@ RESTRICTED_FILENAME_TOKENS = (
     "facility_level",
     "coordinates",
     "full_address",
+    "datacenters_for_analysis",
+    "all_facilities",
+    "facilities_with_predicted",
+    "imputation_audit",
 )
 
 

@@ -34,3 +34,11 @@ data/processed/*per_dc*.geojson
 data/processed/*facility*coordinates*.geojson
 
 *.egg-info/
+
+# Restricted inputs and facility-level outputs at the paths the notebook and
+# scripts actually use (see REPRO.md)
+*datacenters_for_analysis*.csv
+**/clean_outputs_v6*/
+facility_central*.csv
+imputation_audit.csv
+data/processed/facilities_with_predicted_capacity.csv

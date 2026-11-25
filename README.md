@@ -2,9 +2,9 @@
 
 Code and reproducibility materials for:
 
-> **Assessing the Carbon Emissions of United States Hyperscale Data Centers**  
-> Guidi et al.  
-> Round 3 revision for *Nature Sustainability*.
+> **Assessing the carbon emissions and energy consumption of US hyperscale data centres**  
+> Guidi, G., Dominici, F., Squartini, T. et al.  
+> *Nature Sustainability* (2026). https://doi.org/10.1038/s41893-026-01985-7
 
 This repository supports reproducibility under a data-use agreement (DUA). The facility-level data used in the paper cannot be released publicly because it contains commercially sensitive facility identifiers, addresses, coordinates, and facility attributes. The repository is therefore organized in two layers:
 
@@ -17,9 +17,9 @@ Using the 403-facility analytical sample, EPA eGRID2023 Revision 2, and the **to
 
 | Scenario | Facility-load coefficient | Electricity (TWh) | CO2 (Mt), total-output basis |
 |---|---:|---:|---:|
-| Low-load | 0.480 | 67.7 | 21.3 |
+| Low-load | 0.480 | 67.7 | 21.2 |
 | Central/reference | 0.580 | 81.8 | 25.7 |
-| Continuity sensitivity | 0.663 | 93.5 | 29.4 |
+| Continuity sensitivity | 0.663 | 93.5 | 29.3 |
 | AI-weighted high | 0.700 | 98.7 | 31.0 |
 
 The central scenario is `u = 0.58`. The `u = 0.663` scenario is retained for continuity with earlier server-level utilization framing and is not treated as the central facility-level estimate.

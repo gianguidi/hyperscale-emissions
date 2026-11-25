@@ -46,7 +46,39 @@ data/restricted/baxtel_universe_675.csv
 data/raw/egrid2023_data_rev2.xlsx
 data/raw/ba_boundaries.*
 data/raw/state_boundaries.*
+data/processed/all_facilities.csv
+data/processed/df_emissions_per_dc_SF.geojson
 ```
+
+The notebook reads its inputs from its working directory (`BASE = Path(os.getcwd())`),
+not from `data/`. When running it from `notebooks/`, place these next to it:
+
+```text
+notebooks/NEW_hyperscalers_UPDATED_FINAL_df_datacenters_for_analysis.csv   # DUA-protected 403-facility sample
+notebooks/egrid2023_data_rev2.xlsx                                          # public EPA eGRID2023 Rev. 2
+notebooks/balancing_authorities_polygons/balancing_authorities_EPA.shp     # optional, BA map underlay
+```
+
+What each local-only file is used for:
+
+| Local path | Used by | Contents | Public alternative |
+|---|---|---|---|
+| `data/restricted/analytical_sample_403.csv` | `diagnose_inventory_coverage.py` | DUA-protected 403-facility analytical sample | aggregate exports in `public/` |
+| `data/restricted/baxtel_universe_675.csv` | `diagnose_inventory_coverage.py` | DUA-protected 675-facility initial universe | none |
+| `NEW_hyperscalers_UPDATED_FINAL_df_datacenters_for_analysis.csv` (notebook folder) | notebook | DUA-protected 403-facility analytical sample | aggregate exports in `public/` |
+| `data/processed/all_facilities.csv` | `run_capacity_model.py`, `run_spatial_validation.py` | DUA-protected capacity-model input, one row per facility | `data/synthetic/all_facilities.csv` from `make_synthetic_403_fixture.py`; both scripts fall back to it automatically, or set `HYPERSCALE_FACILITIES_PATH` |
+| `data/processed/df_emissions_per_dc_SF.geojson` | `make_figure1_maps.py` (Figure 1a) | DUA-protected facility point geometry | none; Source Data Fig. 1 gives state-level counts |
+| `egrid2023_data_rev2.xlsx` (`data/raw/` or notebook folder) | notebook, `audit_plant_inventory.py` | Public EPA eGRID2023 Revision 2 workbook, not committed because of size. Download from https://www.epa.gov/egrid/download-data | BA factors in `data/processed/ba_*_egrid2023_rev2.csv` |
+| `data/raw/ba_boundaries.*`, `data/raw/state_boundaries.*`, `balancing_authorities_polygons/` | notebook | Balancing-authority and US Census state boundaries | `data/processed/gdf_EPA_totals.geojson` |
+
+Facility-level outputs are also local-only and gitignored:
+`clean_outputs_v6*/` (including `facility_central_total_output.csv` and
+`facility_central_combustion_diagnostic.csv`), `imputation_audit.csv` and
+`data/processed/facilities_with_predicted_capacity.csv`.
+`scripts/check_no_restricted_data.py` runs in CI and fails on tracked files with
+facility location columns, point geometry or restricted filename patterns; it does
+not inspect other facility attributes, so rely on `.gitignore` and review
+`git status` before committing.
 
 Expected facility-level columns include, where available:
 

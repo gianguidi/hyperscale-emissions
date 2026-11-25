@@ -3,10 +3,10 @@ from __future__ import annotations
 import pandas as pd
 
 SCENARIOS = [
-    {"scenario": "low_load", "u": 0.480, "target_electricity_twh": 67.7, "target_co2_mt_total_output": 21.3},
+    {"scenario": "low_load", "u": 0.480, "target_electricity_twh": 67.7, "target_co2_mt_total_output": 21.2},
     {"scenario": "central_reference", "u": 0.580, "target_electricity_twh": 81.8, "target_co2_mt_total_output": 25.7},
-    {"scenario": "continuity_sensitivity", "u": 0.663, "target_electricity_twh": 93.5, "target_co2_mt_total_output": 29.4},
-    {"scenario": "ai_weighted_high", "u": 0.700, "target_electricity_twh": 98.6, "target_co2_mt_total_output": 31.0},
+    {"scenario": "continuity_sensitivity", "u": 0.663, "target_electricity_twh": 93.5, "target_co2_mt_total_output": 29.3},
+    {"scenario": "ai_weighted_high", "u": 0.700, "target_electricity_twh": 98.7, "target_co2_mt_total_output": 31.0},
 ]
 
 

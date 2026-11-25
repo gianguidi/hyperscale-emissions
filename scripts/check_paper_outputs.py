@@ -6,10 +6,10 @@ import sys
 import pandas as pd
 
 EXPECTED = {
-    "low_load": (67.7, 21.3),
+    "low_load": (67.7, 21.2),
     "central_reference": (81.8, 25.7),
-    "continuity_sensitivity": (93.5, 29.4),
-    "ai_weighted_high": (98.6, 31.0),
+    "continuity_sensitivity": (93.5, 29.3),
+    "ai_weighted_high": (98.7, 31.0),
 }
 
 
