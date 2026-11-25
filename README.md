@@ -127,6 +127,13 @@ python scripts/check_paper_outputs.py
 
 Expected outputs are written to `results/tables/`.
 
+Figure 1b (power plants) and the plant-inventory audit also run on public data:
+
+```bash
+python scripts/make_figure1_maps.py        # Figure 1b; Figure 1a is skipped without the DUA-protected facility points
+python scripts/audit_plant_inventory.py    # full 8,802-plant check needs the eGRID workbook in data/raw/ (see REPRO.md)
+```
+
 ## Restricted full-reproduction workflow
 
 The full notebook and map-generation workflow requires the DUA-protected 403-facility analytical sample, the 675-facility initial universe, and local BA/state geospatial files. Place those files locally under `data/restricted/` and `data/raw/` following `REPRO.md`, then run the notebook:

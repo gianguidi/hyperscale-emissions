@@ -22,3 +22,6 @@ jobs:
       - run: pytest -q
       - run: python scripts/reproduce_model.py
       - run: python scripts/validate_public_exports.py
+      - run: python scripts/make_figure1_maps.py
+      - run: python scripts/audit_plant_inventory.py
+      - run: git diff --exit-code -- results/tables/plant_inventory_audit.csv

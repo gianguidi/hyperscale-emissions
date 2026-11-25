@@ -42,3 +42,8 @@ data/processed/*facility*coordinates*.geojson
 facility_central*.csv
 imputation_audit.csv
 data/processed/facilities_with_predicted_capacity.csv
+
+# Regenerated Figure 1 maps from scripts/make_figure1_maps.py; with DUA inputs
+# Figure 1a contains facility point positions, so keep these local
+results/figures/figure1a_hyperscalers.*
+results/figures/figure1b_power_plants.*

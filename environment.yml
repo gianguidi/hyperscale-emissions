@@ -10,6 +10,7 @@ dependencies:
   - matplotlib>=3.7
   - pytest>=7.0
   - nbformat>=5.0
+  - geopandas>=0.14
   - pip
   - pip:
       - -e .

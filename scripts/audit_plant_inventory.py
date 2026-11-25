@@ -9,6 +9,9 @@ from pathlib import Path
 import pandas as pd
 
 
+DEFAULT_EGRID_XLSX = Path("data/raw/egrid2023_data_rev2.xlsx")
+EGRID_DOWNLOAD_URL = "https://www.epa.gov/egrid/download-data"
+
 DISPLAY_GENERATION_COLUMNS = [
     "Plant annual net generation (MWh)",
     "PLNGENAN",
@@ -224,15 +227,33 @@ def main() -> None:
 
     rows = display_metrics(args.display_csv)
 
-    if args.egrid_xlsx is not None:
+    egrid_xlsx = args.egrid_xlsx
+    if egrid_xlsx is None and DEFAULT_EGRID_XLSX.exists():
+        egrid_xlsx = DEFAULT_EGRID_XLSX
+
+    if egrid_xlsx is not None:
         rows.extend(
             attribution_metrics(
-                args.egrid_xlsx,
+                egrid_xlsx,
                 args.ba_weights,
             )
         )
-
-    output = pd.DataFrame(rows)
+        output = pd.DataFrame(rows)
+    else:
+        # Without the eGRID workbook only the public figure-source rows can be
+        # recomputed. Keep the committed eGRID-based rows instead of dropping them.
+        output = pd.DataFrame(rows)
+        if args.out.exists():
+            previous = pd.read_csv(args.out)
+            kept = previous.loc[previous["scope"] != "public_figure_source"]
+            output = pd.concat([output, kept], ignore_index=True)
+            if not kept.empty:
+                print(
+                    "eGRID workbook not found at "
+                    f"{DEFAULT_EGRID_XLSX}; kept the existing eGRID-based rows "
+                    f"in {args.out}. Download eGRID2023 Revision 2 from "
+                    f"{EGRID_DOWNLOAD_URL} to recompute them.\n"
+                )
     args.out.parent.mkdir(
         parents=True,
         exist_ok=True,
@@ -243,6 +264,11 @@ def main() -> None:
     print(f"\nWrote {args.out}")
 
     if args.expected_attribution_count is not None:
+        if egrid_xlsx is None:
+            raise SystemExit(
+                "Expected-count validation requires the eGRID workbook "
+                f"(--egrid-xlsx or {DEFAULT_EGRID_XLSX})."
+            )
         matches = output.loc[
             (
                 output["scope"]

@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""Build manuscript Figure 1 maps.
+
+Figure 1b (power plants) uses only public inputs and always runs.
+Figure 1a (hyperscale data centers) needs the DUA-protected facility point
+file ``data/processed/df_emissions_per_dc_SF.geojson``; it is skipped with a
+message when that file is not available locally (see REPRO.md).
+"""
 from __future__ import annotations
 
 import sys
@@ -8,37 +15,46 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
-import os
-import sys
 
-# ------------------------------------------------------------------
-# Ensure the src/ directory is on sys.path so we can import the
-# hyperscale_emissions package without installing it.
-# ------------------------------------------------------------------
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(ROOT_DIR, "src")
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
-
-from hyperscale_emissions.plotting_maps import (
+from hyperscale_emissions.plotting_maps import (  # noqa: E402
+    gpd,
     plot_figure1a_hyperscalers,
     plot_figure1b_power_plants,
 )
 
-from hyperscale_emissions.plotting_maps import plot_figure1a_hyperscalers, plot_figure1b_power_plants  # noqa: E402
+PROCESSED = ROOT / "data" / "processed"
+FIGURES = ROOT / "results" / "figures"
+RESTRICTED_POINTS = PROCESSED / "df_emissions_per_dc_SF.geojson"
+BA_POLYGONS = PROCESSED / "gdf_EPA_totals.geojson"
 
 
 def main() -> None:
-    plot_figure1a_hyperscalers(
-        df_emissions_per_dc_SF_path=str(ROOT / "data" / "processed" / "df_emissions_per_dc_SF.geojson"),
-        gdf_EPA_totals_path=str(ROOT / "data" / "processed" / "gdf_EPA_totals.geojson"),
-        output_path=str(ROOT / "results" / "figures" / "figure1a_hyperscalers.pdf"),
-    )
+    if gpd is None:
+        raise SystemExit(
+            "geopandas is required for the Figure 1 maps. "
+            "Install it with: pip install -r requirements.txt"
+        )
+
     plot_figure1b_power_plants(
-        plants_with_regions_path=str(ROOT / "data" / "processed" / "plants_with_regions.csv"),
-        gdf_EPA_totals_path=str(ROOT / "data" / "processed" / "gdf_EPA_totals.geojson"),
-        output_path=str(ROOT / "results" / "figures" / "figure1b_power_plants.pdf"),
+        plants_with_regions_path=str(PROCESSED / "plants_with_regions.csv"),
+        gdf_EPA_totals_path=str(BA_POLYGONS),
+        output_path=str(FIGURES / "figure1b_power_plants.pdf"),
     )
+    print(f"Wrote {FIGURES / 'figure1b_power_plants.pdf'}")
+
+    if RESTRICTED_POINTS.exists():
+        plot_figure1a_hyperscalers(
+            df_emissions_per_dc_SF_path=str(RESTRICTED_POINTS),
+            gdf_EPA_totals_path=str(BA_POLYGONS),
+            output_path=str(FIGURES / "figure1a_hyperscalers.pdf"),
+        )
+        print(f"Wrote {FIGURES / 'figure1a_hyperscalers.pdf'}")
+    else:
+        print(
+            "Skipped Figure 1a: it needs the DUA-protected facility point file "
+            f"{RESTRICTED_POINTS.relative_to(ROOT)}, which is not distributed "
+            "publicly (see REPRO.md). Source Data Fig. 1 gives state-level counts."
+        )
 
 
 if __name__ == "__main__":
